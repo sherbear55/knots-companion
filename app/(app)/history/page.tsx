@@ -3,9 +3,6 @@ import { useEffect, useState } from 'react';
 import { getJournalEntries, SavedEntry } from '@/lib/progress-store';
 import { getKnotById } from '@/lib/knots-data';
 
-const typeColors: Record<string, string> = { truth: '#4A7C6F', why: '#4A7C6F', what: '#B8847A', where: '#7C6F4A', movement: '#C49A6C' };
-const typeLabels: Record<string, string> = { truth: "Knot's Truth", why: 'Why', what: 'What', where: 'Where', movement: 'Deep Dive' };
-
 function timeAgo(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
   if (days === 0) return 'Today';
@@ -22,7 +19,7 @@ export default function HistoryPage() {
 
   useEffect(() => { setEntries(getJournalEntries()); }, []);
 
-  // For the bottom inspirational quote — use the most recent entry's knot truth if available
+  // Bottom box: most recent entry's knot truth
   const mostRecentKnot = entries.length > 0 && entries[0].knotId != null
     ? getKnotById(entries[0].knotId)
     : null;
@@ -46,41 +43,49 @@ export default function HistoryPage() {
         <div className="space-y-3">
           {entries.map((entry) => {
             const knot = entry.knotId != null ? getKnotById(entry.knotId) : undefined;
-            const color = typeColors[entry.type] ?? '#4A7C6F';
-            const label = typeLabels[entry.type] ?? entry.type;
-            // For the tag: show full knot name for truth entries, or knot name + type
-            const knotLabel = knot?.fullName ?? entry.knotName ?? (entry.movementName ? `${entry.movementName} Movement` : '');
+            // Display name: full knot name, or movement deep dive label
+            const displayName = knot?.fullName
+              ?? (entry.movementName ? `${entry.movementName} · Deep Dive` : entry.knotName);
+
+            // Question label shown in the card
+            // For truth entries the question IS the truth — show a brief label instead of repeating it
+            const questionDisplay = entry.type === 'truth'
+              ? 'Reflecting on the Knot\'s Truth'
+              : entry.type === 'movement'
+              ? (entry.questionLabel ?? 'Movement reflection')
+              : entry.question;
+
             return (
-              <div key={entry.id} className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.90)', border: '1px solid #E8F0ED' }}>
+              <div key={entry.id} className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.92)', border: '1px solid #E8F0ED' }}>
+                {/* Header — knot name only, no type badge */}
                 <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2" style={{ borderBottom: '1px solid #E8F0ED' }}>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Type badge */}
-                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full" style={{ backgroundColor: color + '18', color }}>
-                      {label}
-                    </span>
-                    {/* Knot name */}
-                    <span className="text-xs font-medium" style={{ color: '#2C2C2C' }}>{knotLabel}</span>
+                    <span className="text-sm font-semibold" style={{ color: '#2C2C2C' }}>{displayName}</span>
                     {entry.isFromBook && (
                       <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: '#4A7C6F12', color: '#4A7C6F' }}>📖 book</span>
                     )}
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-xs font-medium" style={{ color: '#9CA3AF' }}>{timeAgo(entry.createdAt)}</p>
+                    <p className="text-xs font-medium" style={{ color: '#6B7280' }}>{timeAgo(entry.createdAt)}</p>
                     <p className="text-xs" style={{ color: '#9CA3AF' }}>{formatDate(entry.createdAt)}</p>
                   </div>
                 </div>
+
+                {/* Question being reflected on */}
                 <div className="px-4 pt-3">
-                  <p className="text-xs leading-relaxed italic line-clamp-2" style={{ color: '#9CA3AF', borderLeft: `2px solid ${color}`, paddingLeft: '10px' }}>
-                    {entry.question}
+                  <p className="text-xs leading-relaxed italic" style={{ color: '#9CA3AF', borderLeft: '2px solid #4A7C6F', paddingLeft: '10px' }}>
+                    {questionDisplay}
                   </p>
                 </div>
+
+                {/* Journal response */}
                 <div className="px-4 py-3">
                   <p className="text-sm leading-relaxed line-clamp-3" style={{ color: '#2C2C2C' }}>{entry.response}</p>
                 </div>
+
                 <div className="px-4 pb-3">
                   <p className="text-xs" style={{ color: '#9CA3AF' }}>
                     {entry.response.trim().split(/\s+/).length} words
-                    {!entry.isFromBook && entry.type !== 'truth' ? ' · App exclusive question' : ''}
                   </p>
                 </div>
               </div>
@@ -89,21 +94,16 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {/* Bottom quote — matches the most recent entry's knot */}
+      {/* Bottom box — Knot's Truth from most recent entry's knot */}
       {mostRecentKnot && (
-        <div className="mt-6 rounded-2xl p-4 text-center" style={{ backgroundColor: '#E8F0ED' }}>
-          <p className="text-xs leading-relaxed italic" style={{ color: '#4A7C6F' }}>
+        <div className="mt-6 rounded-2xl p-4" style={{ backgroundColor: 'rgba(232,240,237,0.92)', border: '1px solid #C8DED9' }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#4A7C6F' }}>
+            Knot&apos;s Truth
+          </p>
+          <p className="text-xs leading-relaxed italic" style={{ color: '#2C2C2C' }}>
             &ldquo;{mostRecentKnot.knotsTruth}&rdquo;
           </p>
-          <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>— {mostRecentKnot.fullName}</p>
-        </div>
-      )}
-      {!mostRecentKnot && entries.length > 0 && (
-        <div className="mt-6 rounded-2xl p-4 text-center" style={{ backgroundColor: '#E8F0ED' }}>
-          <p className="text-xs leading-relaxed italic" style={{ color: '#4A7C6F' }}>
-            &ldquo;You are not alone in this. Every knot you tie is an act of love.&rdquo;
-          </p>
-          <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>— Knots of Survival</p>
+          <p className="text-xs mt-2 font-medium" style={{ color: '#4A7C6F' }}>— {mostRecentKnot.fullName}</p>
         </div>
       )}
     </div>

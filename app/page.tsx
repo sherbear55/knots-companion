@@ -67,7 +67,7 @@ export default function HomePage() {
               <span className="text-white text-base">∞</span>
             </div>
             <div>
-              <p className="text-sm font-bold leading-tight" style={{ color: '#2C2C2C' }}>Knots of Survival</p>
+              <p className="text-lg font-bold leading-tight" style={{ color: '#2C2C2C' }}>Knots of Survival</p>
               <p className="text-sm font-medium leading-tight" style={{ color: '#4A7C6F' }}>Caregiver Companion</p>
             </div>
           </div>
@@ -86,10 +86,10 @@ export default function HomePage() {
         <h1 className="text-4xl font-bold leading-tight mb-5" style={{ color: '#2C2C2C' }}>
           You don&apos;t have to carry this <span style={{ color: '#4A7C6F' }}>alone.</span>
         </h1>
-        <p className="text-lg leading-relaxed mb-4" style={{ color: '#6B7280' }}>
+        <p className="text-lg leading-relaxed mb-4" style={{ color: '#3D3D3D' }}>
           A daily reflection companion for caregivers — grounded in 17 knots of wisdom, one honest question at a time.
         </p>
-        <p className="text-sm italic mb-8" style={{ color: '#7D5C2E', textShadow: '0 1px 3px rgba(250,247,242,0.8)' }}>
+        <p className="text-sm italic mb-8 px-4 py-2 rounded-xl inline-block" style={{ color: '#5C3D0E', backgroundColor: 'rgba(250,247,242,0.72)', backdropFilter: 'blur(4px)' }}>
           &ldquo;You are not invisible. What you are carrying is real, and you are allowed to let it be witnessed.&rdquo;
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -100,13 +100,13 @@ export default function HomePage() {
             Try Demo First →
           </Link>
         </div>
-        <p className="text-xs mt-4" style={{ color: '#9CA3AF' }}>14-day free trial · Cancel anytime · 365 days of reflection content</p>
+        <p className="text-xs mt-4" style={{ color: '#5A5A5A' }}>14-day free trial · Cancel anytime · 365 days of reflection content</p>
       </section>
 
       {/* How it works */}
       <section className="max-w-3xl mx-auto px-5 pb-14">
         <h2 className="text-xl font-bold text-center mb-2" style={{ color: '#2C2C2C' }}>How it works</h2>
-        <p className="text-sm text-center mb-8" style={{ color: '#9CA3AF' }}>One question. Each day. At whatever pace you need.</p>
+        <p className="text-sm text-center mb-8" style={{ color: '#5A5A5A' }}>One question. Each day. At whatever pace you need.</p>
         <div className="grid sm:grid-cols-3 gap-5">
           {[
             { step: '1', color: '#4A7C6F', title: 'You receive one reflection', desc: "Each day brings one question — a Knot's Truth or an anchor question drawn from the book." },

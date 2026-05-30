@@ -64,8 +64,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           borderColor: '#E8F0ED',
         }}
       >
-        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center gap-2" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A7C6F' }}>
+        <div className="max-w-lg mx-auto px-4 py-3.5 flex items-center gap-2.5" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A7C6F' }}>
             <span className="text-white text-sm">∞</span>
           </div>
           <div>
