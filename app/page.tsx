@@ -100,7 +100,7 @@ export default function HomePage() {
             Try Demo First →
           </Link>
         </div>
-        <p className="text-xs mt-4" style={{ color: '#5A5A5A' }}>14-day free trial · Cancel anytime · 365 days of reflection content</p>
+        <p className="text-xs mt-4" style={{ color: '#5A5A5A' }}><Link href="/signup" style={{ color: '#4A7C6F', fontWeight: 600 }}>Start your 14-day free trial</Link> · Cancel anytime · 365 days of content</p>
       </section>
 
       {/* How it works */}

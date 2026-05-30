@@ -5,7 +5,10 @@ import { KNOTS, getKnotById } from '@/lib/knots-data';
 import { getAllProgress, getJournalEntries, getOverallStats, KnotProgress, SavedEntry } from '@/lib/progress-store';
 
 const movementColors: Record<string, string> = {
-  Awareness: '#4A7C6F', Embodiment: '#C49A6C', Integration: '#B8847A', Peace: '#7C6F4A',
+  'Surviving the Current': '#4A7C6F',
+  'Loosening the Weight': '#8B5E2A',
+  'Return to Self & the Sacred': '#7D4A43',
+  'Trust': '#5A4F30',
 };
 
 function timeAgo(iso: string) {
@@ -30,8 +33,8 @@ export default function DashboardPage() {
   const knotsInProgress = KNOTS.filter((k) => {
     const kp = progress[k.id];
     if (!kp) return false;
-    const done = kp.usedIndices.length + (kp.completedTruth ? 1 : 0);
-    return done > 0 && done < 22;
+    const done = kp.usedIndices.length;
+    return done > 0 && done < 21 || (kp.completedTruth && kp.usedIndices.length < 21);
   });
 
   return (
@@ -42,9 +45,7 @@ export default function DashboardPage() {
           <p className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#9CA3AF' }}>Welcome back</p>
           <h1 className="text-xl font-semibold" style={{ color: '#2C2C2C' }}>Caregiver</h1>
         </div>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4A7C6F' }}>
-          <span className="text-white font-semibold text-sm">C</span>
-        </div>
+
       </div>
 
       {/* Stats */}
@@ -80,8 +81,8 @@ export default function DashboardPage() {
           <div className="space-y-2">
             {knotsInProgress.slice(0, 4).map((knot) => {
               const kp = progress[knot.id]!;
-              const done = kp.usedIndices.length + (kp.completedTruth ? 1 : 0);
-              const pct = Math.round((done / 22) * 100);
+              const done = kp.usedIndices.length;
+              const pct = Math.round((done / 21) * 100);
               const color = movementColors[knot.movement];
               return (
                 <Link key={knot.id} href={`/today/${knot.id}`}
@@ -96,7 +97,7 @@ export default function DashboardPage() {
                       <div className="h-1 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
                     </div>
                   </div>
-                  <span className="text-xs font-medium flex-shrink-0" style={{ color }}>{done}/22</span>
+                  <span className="text-xs font-medium flex-shrink-0" style={{ color }}>{done}/21</span>
                 </Link>
               );
             })}
@@ -114,13 +115,11 @@ export default function DashboardPage() {
           <div className="space-y-3">
             {recentEntries.map((entry) => {
               const knot = entry.knotId != null ? getKnotById(entry.knotId) : undefined;
-              const color = movementColors[knot?.movement ?? 'Awareness'];
+              const color = movementColors[knot?.movement ?? 'Surviving the Current'];
               return (
                 <div key={entry.id} className="rounded-xl p-3" style={{ backgroundColor: '#FAF7F2' }}>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize"
-                      style={{ backgroundColor: color + '22', color }}>{entry.type}</span>
-                    <span className="text-xs" style={{ color: '#9CA3AF' }}>{knot?.name}</span>
+                    <span className="text-sm font-semibold" style={{ color: '#2C2C2C' }}>{knot?.fullName ?? entry.knotName}</span>
                     <span className="text-xs ml-auto" style={{ color: '#9CA3AF' }}>{timeAgo(entry.createdAt)}</span>
                   </div>
                   <p className="text-sm leading-relaxed line-clamp-2" style={{ color: '#2C2C2C' }}>{entry.response}</p>
