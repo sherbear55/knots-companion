@@ -4,25 +4,32 @@ import { KnotData } from '@/types';
 
 const PROGRESS_KEY = 'knots_question_progress';
 const JOURNAL_KEY = 'knots_journal_entries';
+const MOVEMENT_KEY = 'knots_movement_progress';
 
 export interface KnotProgress {
   completedTruth: boolean;
   usedIndices: number[]; // flat indices 0–20 (0-6=why, 7-13=what, 14-20=where)
 }
 
+export interface MovementProgress {
+  usedQuestionIds: string[]; // e.g. ['awareness-1', 'awareness-2']
+}
+
 export interface SavedEntry {
   id: string;
-  knotId: number;
+  knotId: number | null;       // null for movement-level entries
   knotName: string;
   flatIndex: number;
-  type: 'truth' | 'why' | 'what' | 'where';
+  type: 'truth' | 'why' | 'what' | 'where' | 'movement';
   question: string;
   isFromBook: boolean;
+  movementName?: string;
+  questionLabel?: string;
   response: string;
   createdAt: string;
 }
 
-// ── Reading ──────────────────────────────────────────────────────────────────
+// ── Knot progress ─────────────────────────────────────────────────────────────
 
 export function getAllProgress(): Record<number, KnotProgress> {
   if (typeof window === 'undefined') return {};
@@ -36,16 +43,6 @@ export function getKnotProgress(knotId: number): KnotProgress {
   const all = getAllProgress();
   return all[knotId] ?? { completedTruth: false, usedIndices: [] };
 }
-
-export function getJournalEntries(): SavedEntry[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(JOURNAL_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-// ── Writing ──────────────────────────────────────────────────────────────────
 
 function saveAllProgress(all: Record<number, KnotProgress>) {
   localStorage.setItem(PROGRESS_KEY, JSON.stringify(all));
@@ -65,6 +62,40 @@ export function markTruthCompleted(knotId: number) {
   kp.completedTruth = true;
   all[knotId] = kp;
   saveAllProgress(all);
+}
+
+// ── Movement progress ─────────────────────────────────────────────────────────
+
+export function getAllMovementProgress(): Record<string, MovementProgress> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(MOVEMENT_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+export function getMovementProgress(movementName: string): MovementProgress {
+  const all = getAllMovementProgress();
+  return all[movementName] ?? { usedQuestionIds: [] };
+}
+
+export function markMovementQuestionUsed(movementName: string, questionId: string) {
+  if (typeof window === 'undefined') return;
+  const all = getAllMovementProgress();
+  const mp = all[movementName] ?? { usedQuestionIds: [] };
+  if (!mp.usedQuestionIds.includes(questionId)) mp.usedQuestionIds.push(questionId);
+  all[movementName] = mp;
+  localStorage.setItem(MOVEMENT_KEY, JSON.stringify(all));
+}
+
+// ── Journal ───────────────────────────────────────────────────────────────────
+
+export function getJournalEntries(): SavedEntry[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(JOURNAL_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
 }
 
 export function saveJournalEntry(entry: SavedEntry) {
@@ -121,6 +152,7 @@ export function getRandomUnusedQuestion(knotId: number, knot: KnotData): Resolve
 
 export function getOverallStats() {
   const all = getAllProgress();
+  const movementAll = getAllMovementProgress();
   const knotIds = Object.keys(all).map(Number);
   let totalDone = 0;
   let knotsStarted = 0;
@@ -132,6 +164,11 @@ export function getOverallStats() {
     if (done > 0) knotsStarted++;
     if (kp.usedIndices.length === 21 && kp.completedTruth) knotsFinished++;
     totalDone += done;
+  }
+
+  // Add movement reflection completions
+  for (const mp of Object.values(movementAll)) {
+    totalDone += mp.usedQuestionIds.length;
   }
 
   return { totalDone, knotsStarted, knotsFinished };

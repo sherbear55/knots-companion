@@ -36,7 +36,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           pointerEvents: 'none',
           backgroundImage: "url('/cover-bg.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'center top',
+          backgroundPosition: 'center 42%',
           backgroundRepeat: 'no-repeat',
           opacity: 0.32,
         }}

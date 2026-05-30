@@ -17,7 +17,7 @@ const movementColors: Record<string, string> = {
 };
 
 const features = [
-  { icon: '🧵', title: '374 Days of Daily Reflection', desc: "17 knots × 22 days — one Knot's Truth and three anchor questions per knot." },
+  { icon: '🧵', title: '365 Days of Daily Reflection — One Full Year', desc: "17 knots × 22 sessions + 8 Movement Deep Dives = one full year of reflection." },
   { icon: '📓', title: 'Personal Reflection Journal', desc: 'Write your response each day. Your entries are private, yours alone.' },
   { icon: '🔥', title: 'Streaks & Progress Tracking', desc: 'Build a daily reflection habit with streak tracking and knot progress.' },
   { icon: '🪢', title: 'Grounded in the Book', desc: "Grounded in Sherry Petty's book — plus hundreds of exclusive reflection questions available only inside the app." },
@@ -37,7 +37,7 @@ export default function HomePage() {
           pointerEvents: 'none',
           backgroundImage: "url('/cover-bg.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'center top',
+          backgroundPosition: 'center 42%',
           backgroundRepeat: 'no-repeat',
           opacity: 0.32,
         }}
@@ -97,7 +97,7 @@ export default function HomePage() {
             Try Demo First →
           </Link>
         </div>
-        <p className="text-xs mt-4" style={{ color: '#9CA3AF' }}>14-day free trial · Cancel anytime · 374 days of reflection content</p>
+        <p className="text-xs mt-4" style={{ color: '#9CA3AF' }}>14-day free trial · Cancel anytime · 365 days of reflection content</p>
       </section>
 
       {/* How it works */}
@@ -168,7 +168,7 @@ export default function HomePage() {
               <span className="text-sm" style={{ color: '#9CA3AF' }}>/ month</span>
             </div>
             <ul className="space-y-2 mb-6">
-              {['374 days of daily reflections', '17 Knots · Why / What / Where', 'Personal reflection journal', 'Streak tracking & progress', 'All future content updates', 'Full App access when ready'].map((item) => (
+              {['365 days of daily reflections', '17 Knots · Why / What / Where', 'Personal reflection journal', 'Streak tracking & progress', 'All future content updates', 'Full App access when ready'].map((item) => (
                 <li key={item} className="text-sm flex items-center gap-2" style={{ color: '#2C2C2C' }}><span style={{ color: '#4A7C6F' }}>✓</span> {item}</li>
               ))}
             </ul>
@@ -204,7 +204,7 @@ export default function HomePage() {
           </p>
           <p className="text-sm mb-8" style={{ color: '#C8DED9' }}>— Knot of Peace, Knots of Survival</p>
           <Link href="/signup" className="inline-block px-8 py-3.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity" style={{ backgroundColor: '#C49A6C', color: '#ffffff' }}>
-            Begin My 374-Day Journey
+            Begin My 365-Day Journey
           </Link>
           <p className="text-xs mt-4" style={{ color: '#C8DED9' }}>
             Or <Link href="/dashboard" style={{ color: '#ffffff', textDecoration: 'underline' }}>try the demo</Link> with no account required

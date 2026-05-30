@@ -716,3 +716,82 @@ export const MOCK_USER: MockUser = {
     },
   ],
 };
+
+// ── Movement Reflection Questions ─────────────────────────────────────────────
+// 2 per movement × 4 movements = 8 bonus sessions → 357 + 8 = 365 (one full year)
+// These appear as optional "Movement Deep Dive" prompts after knot reflections.
+export const MOVEMENT_REFLECTIONS: Record<string, {
+  movementNumber: number;
+  theme: string;
+  color: string;
+  questions: { id: string; label: string; text: string }[];
+}> = {
+  Awareness: {
+    movementNumber: 1,
+    theme: 'Recognizing What Is True',
+    color: '#4A7C6F',
+    questions: [
+      {
+        id: 'awareness-1',
+        label: 'Looking Back',
+        text: 'Looking across all five Awareness knots, which truth landed most deeply in you — and why do you think that is?',
+      },
+      {
+        id: 'awareness-2',
+        label: 'What Has Shifted',
+        text: 'What has shifted in how you see yourself as a caregiver since beginning the Awareness movement? What can you name now that you could not before?',
+      },
+    ],
+  },
+  Embodiment: {
+    movementNumber: 2,
+    theme: 'Living What You Know',
+    color: '#C49A6C',
+    questions: [
+      {
+        id: 'embodiment-1',
+        label: 'What Resisted',
+        text: 'Which of the five Embodiment knots felt most foreign or difficult to you — and what does that resistance tell you about where you still need space to grow?',
+      },
+      {
+        id: 'embodiment-2',
+        label: 'How You Have Changed',
+        text: 'How has the Embodiment movement changed the way you inhabit your days as a caregiver? Where do you notice yourself living differently?',
+      },
+    ],
+  },
+  Integration: {
+    movementNumber: 3,
+    theme: 'Weaving It Into Who You Are',
+    color: '#B8847A',
+    questions: [
+      {
+        id: 'integration-1',
+        label: 'The Unfinished Places',
+        text: 'As you look across the Integration knots, where do you feel the most unfinished — and is that okay? What does it mean to integrate something without perfecting it?',
+      },
+      {
+        id: 'integration-2',
+        label: 'What You Now Carry',
+        text: 'What have you woven into yourself through this movement that you could not have named before you began? What is permanently part of you now?',
+      },
+    ],
+  },
+  Peace: {
+    movementNumber: 4,
+    theme: 'Arriving Home to Yourself',
+    color: '#7C6F4A',
+    questions: [
+      {
+        id: 'peace-1',
+        label: 'What Peace Means Now',
+        text: 'What does peace mean to you now, after walking through Forgiveness and Peace? How has its definition changed from what you thought it was when you began?',
+      },
+      {
+        id: 'peace-2',
+        label: 'A Letter Forward',
+        text: 'If you could write one sentence to the caregiver you were before you began this entire journey, what would it say? Write it here. Let it be true.',
+      },
+    ],
+  },
+};

@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { KNOTS, MOVEMENTS } from '@/lib/knots-data';
-import { getAllProgress, KnotProgress } from '@/lib/progress-store';
+import { KNOTS, MOVEMENTS, MOVEMENT_REFLECTIONS } from '@/lib/knots-data';
+import { getAllProgress, getAllMovementProgress, KnotProgress, MovementProgress } from '@/lib/progress-store';
 
 const movementColors: Record<string, { bg: string; text: string; border: string }> = {
   Awareness:   { bg: '#4A7C6F18', text: '#4A7C6F', border: '#4A7C6F33' },
@@ -14,10 +14,12 @@ const movementColors: Record<string, { bg: string; text: string; border: string 
 export default function JourneyPage() {
   const router = useRouter();
   const [progress, setProgress] = useState<Record<number, KnotProgress>>({});
+  const [movementProgress, setMovementProgress] = useState<Record<string, MovementProgress>>({});
   const [activeMovement, setActiveMovement] = useState<number | null>(null);
 
   useEffect(() => {
     setProgress(getAllProgress());
+    setMovementProgress(getAllMovementProgress());
   }, []);
 
   const getKnotStats = (knotId: number) => {
@@ -27,8 +29,19 @@ export default function JourneyPage() {
     return { done, total: 22, pct: Math.round((done / 22) * 100), truthDone: kp.completedTruth };
   };
 
+  const getMovementDeepDiveStats = (movementName: string) => {
+    const mp = movementProgress[movementName];
+    const used = mp?.usedQuestionIds ?? [];
+    const total = MOVEMENT_REFLECTIONS[movementName]?.questions.length ?? 2;
+    return { used, total, done: used.length };
+  };
+
   const handleKnotSelect = (knotId: number) => {
     router.push(`/today/${knotId}`);
+  };
+
+  const handleMovementDeepDive = (movementName: string) => {
+    router.push(`/today/movement/${encodeURIComponent(movementName)}`);
   };
 
   return (
@@ -74,6 +87,8 @@ export default function JourneyPage() {
         {MOVEMENTS.filter((m) => activeMovement === null || m.number === activeMovement).map((movement) => {
           const movementKnots = KNOTS.filter((k) => movement.knotIds.includes(k.id));
           const c = movementColors[movement.name];
+          const deepDive = MOVEMENT_REFLECTIONS[movement.name];
+          const ddStats = getMovementDeepDiveStats(movement.name);
 
           return (
             <div key={movement.number}>
@@ -96,7 +111,7 @@ export default function JourneyPage() {
                     <button key={knot.id} onClick={() => handleKnotSelect(knot.id)}
                       className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-all active:scale-[0.98]"
                       style={{
-                        backgroundColor: isComplete ? c.bg : '#ffffff',
+                        backgroundColor: isComplete ? c.bg : 'rgba(255,255,255,0.82)',
                         border: isComplete ? `1.5px solid ${c.text}` : '1px solid #E8F0ED',
                         boxShadow: hasStarted && !isComplete ? '0 1px 6px rgba(74,124,111,0.08)' : 'none',
                       }}>
@@ -140,6 +155,52 @@ export default function JourneyPage() {
                     </button>
                   );
                 })}
+
+                {/* Movement Deep Dive card */}
+                {deepDive && (
+                  <button
+                    onClick={() => handleMovementDeepDive(movement.name)}
+                    className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-all active:scale-[0.98] mt-1"
+                    style={{
+                      backgroundColor: ddStats.done === ddStats.total ? c.bg : 'rgba(255,255,255,0.82)',
+                      border: `1.5px dashed ${c.border}`,
+                    }}
+                  >
+                    {/* Icon */}
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-base"
+                      style={{ backgroundColor: c.bg, color: c.text }}>
+                      ✦
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold" style={{ color: c.text }}>
+                        {movement.name} Deep Dive
+                      </p>
+                      <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                        {deepDive.theme} · 2 movement reflections
+                      </p>
+                      {ddStats.done > 0 && (
+                        <div className="mt-1.5 h-1 rounded-full" style={{ backgroundColor: '#E8F0ED' }}>
+                          <div className="h-1 rounded-full transition-all"
+                            style={{ width: `${Math.round((ddStats.done / ddStats.total) * 100)}%`, backgroundColor: c.text }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-shrink-0 text-right">
+                      {ddStats.done === ddStats.total ? (
+                        <span className="text-xs font-semibold" style={{ color: c.text }}>Complete</span>
+                      ) : ddStats.done > 0 ? (
+                        <div>
+                          <p className="text-xs font-semibold" style={{ color: c.text }}>{ddStats.done}/{ddStats.total}</p>
+                          <p className="text-xs" style={{ color: '#9CA3AF' }}>done</p>
+                        </div>
+                      ) : (
+                        <span className="text-xs" style={{ color: '#C49A6C' }}>Explore →</span>
+                      )}
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -147,8 +208,8 @@ export default function JourneyPage() {
       </div>
 
       <p className="text-xs text-center mt-6" style={{ color: '#9CA3AF' }}>
-        Each knot has 22 reflections — the Knot&apos;s Truth + 21 questions.<br />
-        The app picks a fresh one each time you visit.
+        Each knot: 1 Knot&apos;s Truth + 21 questions = 22 sessions.<br />
+        Plus 2 Deep Dive reflections per movement = <strong>365 days</strong> — one full year.
       </p>
     </div>
   );
