@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 const knots = [
   { id: 1, name: 'Being Seen', movement: 'Surviving the Current' }, { id: 2, name: 'Grace', movement: 'Surviving the Current' },
-  { id: 3, name: 'Emotional Release', movement: 'Surviving the Current' }, { id: 4, name: 'Expectations', movement: 'Loosening the Weight' },
+  { id: 3, name: 'Emotional Release', movement: 'Surviving the Current' }, { id: 4, name: 'Releasing Expectations', movement: 'Loosening the Weight' },
   { id: 5, name: 'Humor', movement: 'Loosening the Weight' }, { id: 6, name: 'Joy', movement: 'Loosening the Weight' },
   { id: 7, name: 'Time Alone', movement: 'Return to Self & the Sacred' }, { id: 8, name: 'Sacred Moments', movement: 'Return to Self & the Sacred' },
   { id: 9, name: 'Ritual', movement: 'Return to Self & the Sacred' }, { id: 10, name: 'Permission', movement: 'Return to Self & the Sacred' },

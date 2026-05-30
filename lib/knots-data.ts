@@ -117,8 +117,8 @@ export const KNOTS: KnotData[] = [
   },
   {
     id: 4,
-    name: 'Expectations',
-    fullName: 'Knot of Expectations',
+    name: 'Releasing Expectations',
+    fullName: 'Knot of Releasing Expectations',
     theme: 'Letting Go of the Perfect Caregiver Myth',
     movement: 'Loosening the Weight',
     movementNumber: 2,
