@@ -1,0 +1,37 @@
+
+> nextjs-app@0.1.0 dev
+> next dev --turbopack
+
+ ⚠ Port 3000 is in use, using available port 3001 instead.
+   ▲ Next.js 15.3.3 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://169.254.0.21:3001
+
+ ✓ Starting...
+ ✓ Ready in 989ms
+ ○ Compiling / ...
+ ✓ Compiled / in 16.3s
+ GET / 200 in 17768ms
+ ⚠ Cross origin request detected from 3001-i4b7b228vpp2rkzo18oqz.e2b.app to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.co[?25h
+ allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET / 200 in 113ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1054ms
+ GET /dashboard 200 in 1095ms
+ ○ Compiling /today ...
+ ✓ Compiled /today in 903ms
+ GET /today 200 in 936ms
+ ○ Compiling /journey ...
+ ✓ Compiled /journey in 1029ms
+ GET /journey 200 in 1060ms
+ ○ Compiling /history ...
+ ✓ Compiled /history in 907ms
+ GET /history 200 in 936ms
+ GET /journey 200 in 214ms
+ GET /dashboard 200 in 52ms
+ GET /dashboard 200 in 37ms
+ GET /today 200 in 35ms
+ GET /dashboard 200 in 33ms
+ ✓ Compiled in 69ms
+[?25h
