@@ -25,7 +25,37 @@ const features = [
 
 export default function HomePage() {
   return (
-    <div style={{ backgroundColor: '#FAF7F2', color: '#2C2C2C' }}>
+    <div style={{ backgroundColor: '#FAF7F2', color: '#2C2C2C', position: 'relative' }}>
+
+      {/* Book cover background — same treatment as app interior */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: 'none',
+          backgroundImage: "url('/cover-bg.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.32,
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: 'none',
+          background: 'linear-gradient(to bottom, rgba(250,247,242,0.38) 0%, rgba(250,247,242,0.22) 50%, rgba(250,247,242,0.38) 100%)',
+        }}
+      />
+
+      {/* All content sits above the background */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+
       {/* Nav */}
       <nav className="sticky top-0 z-50 border-b" style={{ backgroundColor: '#FAF7F2CC', backdropFilter: 'blur(12px)', borderColor: '#E8F0ED' }}>
         <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
@@ -80,7 +110,7 @@ export default function HomePage() {
             { step: '2', color: '#C49A6C', title: 'You write your response', desc: 'Your journal is private. Write as much or as little as you need. There is no wrong answer.' },
             { step: '3', color: '#B8847A', title: 'You build your knot', desc: 'Each knot takes 22 days: 1 truth + 7 Why + 7 What + 7 Where reflections.' },
           ].map((s) => (
-            <div key={s.step} className="rounded-2xl p-5" style={{ backgroundColor: '#ffffff', border: '1px solid #E8F0ED' }}>
+            <div key={s.step} className="rounded-2xl p-5" style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid #E8F0ED' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white mb-3" style={{ backgroundColor: s.color }}>{s.step}</div>
               <h3 className="text-sm font-semibold mb-1.5" style={{ color: '#2C2C2C' }}>{s.title}</h3>
               <p className="text-xs leading-relaxed" style={{ color: '#6B7280' }}>{s.desc}</p>
@@ -94,7 +124,7 @@ export default function HomePage() {
         <h2 className="text-xl font-bold text-center mb-8" style={{ color: '#2C2C2C' }}>What&apos;s included</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           {features.map((f) => (
-            <div key={f.title} className="rounded-2xl p-5 flex gap-4" style={{ backgroundColor: '#ffffff', border: '1px solid #E8F0ED' }}>
+            <div key={f.title} className="rounded-2xl p-5 flex gap-4" style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid #E8F0ED' }}>
               <span className="text-2xl flex-shrink-0">{f.icon}</span>
               <div>
                 <h3 className="text-sm font-semibold mb-1" style={{ color: '#2C2C2C' }}>{f.title}</h3>
@@ -106,7 +136,7 @@ export default function HomePage() {
       </section>
 
       {/* 17 Knots grid */}
-      <section className="py-12 px-5" style={{ backgroundColor: '#ffffff' }}>
+      <section className="py-12 px-5" style={{ backgroundColor: 'rgba(255,255,255,0.75)' }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-xl font-bold text-center mb-2" style={{ color: '#2C2C2C' }}>The 17 Knots</h2>
           <p className="text-sm text-center mb-8" style={{ color: '#9CA3AF' }}>Four movements · One path home to yourself</p>
@@ -130,7 +160,7 @@ export default function HomePage() {
         <h2 className="text-xl font-bold text-center mb-2" style={{ color: '#2C2C2C' }}>Simple, honest pricing</h2>
         <p className="text-sm text-center mb-8" style={{ color: '#9CA3AF' }}>No app store markups. Subscribed directly — more reaches you.</p>
         <div className="grid sm:grid-cols-2 gap-5">
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#ffffff', border: '2px solid #4A7C6F', boxShadow: '0 4px 20px rgba(74,124,111,0.1)' }}>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(255,255,255,0.90)', border: '2px solid #4A7C6F', boxShadow: '0 4px 20px rgba(74,124,111,0.1)' }}>
             <div className="inline-block text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full mb-4" style={{ backgroundColor: '#4A7C6F', color: '#ffffff' }}>Available Now</div>
             <h3 className="text-lg font-bold mb-1" style={{ color: '#2C2C2C' }}>Builder Tier</h3>
             <div className="flex items-baseline gap-1 mb-4">
@@ -147,7 +177,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E8F0ED', opacity: 0.8 }}>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(250,247,242,0.85)', border: '1px solid #E8F0ED', opacity: 0.8 }}>
             <div className="inline-block text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full mb-4" style={{ backgroundColor: '#E8F0ED', color: '#9CA3AF' }}>Coming Soon</div>
             <h3 className="text-lg font-bold mb-1" style={{ color: '#2C2C2C' }}>Full App Tier</h3>
             <div className="flex items-baseline gap-1 mb-4">
@@ -183,7 +213,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-5 text-center border-t" style={{ borderColor: '#E8F0ED', backgroundColor: '#FAF7F2' }}>
+      <footer className="py-8 px-5 text-center border-t" style={{ borderColor: '#E8F0ED', backgroundColor: 'rgba(250,247,242,0.90)' }}>
         <p className="text-xs" style={{ color: '#9CA3AF' }}>
           © 2025 Knots of Survival · Sherry Petty ·{' '}
           <Link href="/login" style={{ color: '#4A7C6F' }}>Sign In</Link> ·{' '}
@@ -191,6 +221,8 @@ export default function HomePage() {
         </p>
         <p className="text-xs mt-1" style={{ color: '#C8C0B8' }}>Built with care, for caregivers who carry everything.</p>
       </footer>
+
+      </div>{/* end z-index wrapper */}
     </div>
   );
 }

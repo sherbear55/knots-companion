@@ -26,11 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FAF7F2' }}>
 
-      {/* ── Book cover background (translucent) ─────────────────────────────
-          Image: storm/sea/knot/lighthouse — from Knots of Survival cover art.
-          Opacity 0.13 = visible texture without overwhelming the light UI.
-          Increase to 0.20 for stronger presence; decrease to 0.08 for subtler.
-         ─────────────────────────────────────────────────────────────────── */}
+      {/* Book cover background — increased opacity for more presence */}
       <div
         aria-hidden="true"
         style={{
@@ -42,11 +38,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           backgroundSize: 'cover',
           backgroundPosition: 'center top',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.13,
+          opacity: 0.32,
         }}
       />
 
-      {/* Warm linen tint layer — softens the dark image to match brand palette */}
+      {/* Soft warm overlay — lightened so the image shows through more */}
       <div
         aria-hidden="true"
         style={{
@@ -54,7 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           inset: 0,
           zIndex: 0,
           pointerEvents: 'none',
-          background: 'linear-gradient(to bottom, rgba(250,247,242,0.55) 0%, rgba(250,247,242,0.35) 50%, rgba(250,247,242,0.55) 100%)',
+          background: 'linear-gradient(to bottom, rgba(250,247,242,0.38) 0%, rgba(250,247,242,0.22) 50%, rgba(250,247,242,0.38) 100%)',
         }}
       />
 
@@ -63,7 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Bottom nav — frosted glass so the bg shows through slightly */}
+      {/* Bottom nav — frosted glass */}
       <nav
         className="fixed bottom-0 left-0 right-0 border-t z-50"
         style={{
