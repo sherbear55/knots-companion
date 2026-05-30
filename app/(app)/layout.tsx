@@ -64,13 +64,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           borderColor: '#E8F0ED',
         }}
       >
-        <div className="max-w-lg mx-auto px-4 py-3.5 flex items-center gap-2.5" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3" style={{ position: 'relative', zIndex: 1 }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A7C6F' }}>
             <span className="text-white text-sm">∞</span>
           </div>
           <div>
-            <p className="text-sm font-bold leading-tight" style={{ color: '#2C2C2C' }}>Knots of Survival</p>
-            <p className="text-xs font-medium leading-tight" style={{ color: '#4A7C6F' }}>Caregiver Companion</p>
+            <p className="text-xl font-bold leading-tight" style={{ color: '#2C2C2C' }}>Knots of Survival</p>
+            <p className="text-sm font-medium leading-tight" style={{ color: '#4A7C6F' }}>Caregiver Companion</p>
           </div>
         </div>
       </header>
