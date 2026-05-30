@@ -111,7 +111,7 @@ export default function HomePage() {
           {[
             { step: '1', color: '#4A7C6F', title: 'You receive one reflection', desc: "Each day brings one question — a Knot's Truth or an anchor question drawn from the book." },
             { step: '2', color: '#C49A6C', title: 'You write your response', desc: 'Your journal is private. Write as much or as little as you need. There is no wrong answer.' },
-            { step: '3', color: '#B8847A', title: 'You build your knot', desc: 'Each knot has 21 reflection questions plus the Knot's Truth — work through them at your own pace.' },
+            { step: '3', color: '#B8847A', title: 'You build your knot', desc: "Each knot has 21 reflection questions plus the Knot's Truth — work through them at your own pace." },
           ].map((s) => (
             <div key={s.step} className="rounded-2xl p-5" style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid #E8F0ED' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white mb-3" style={{ backgroundColor: s.color }}>{s.step}</div>
