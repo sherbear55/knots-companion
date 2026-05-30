@@ -5,10 +5,10 @@ import { KNOTS, MOVEMENTS, MOVEMENT_REFLECTIONS } from '@/lib/knots-data';
 import { getAllProgress, getAllMovementProgress, KnotProgress, MovementProgress } from '@/lib/progress-store';
 
 const movementColors: Record<string, { bg: string; text: string; border: string }> = {
-  Awareness:   { bg: '#4A7C6F18', text: '#4A7C6F', border: '#4A7C6F33' },
-  Embodiment:  { bg: '#C49A6C18', text: '#C49A6C', border: '#C49A6C33' },
-  Integration: { bg: '#B8847A18', text: '#B8847A', border: '#B8847A33' },
-  Peace:       { bg: '#7C6F4A18', text: '#7C6F4A', border: '#7C6F4A33' },
+  'Surviving the Current':       { bg: '#4A7C6F18', text: '#4A7C6F', border: '#4A7C6F33' },
+  'Loosening the Weight':        { bg: '#C49A6C18', text: '#C49A6C', border: '#C49A6C33' },
+  'Return to Self & the Sacred': { bg: '#B8847A18', text: '#B8847A', border: '#B8847A33' },
+  'Trust':                       { bg: '#7C6F4A18', text: '#7C6F4A', border: '#7C6F4A33' },
 };
 
 export default function JourneyPage() {

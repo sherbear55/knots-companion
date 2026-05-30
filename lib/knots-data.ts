@@ -6,7 +6,7 @@ export const KNOTS: KnotData[] = [
     name: 'Being Seen & Heard',
     fullName: 'Knot of Being Seen & Heard',
     theme: 'What You Wish Others Knew',
-    movement: 'Awareness',
+    movement: 'Surviving the Current',
     movementNumber: 1,
     knotsTruth: 'You are not invisible. What you are carrying is real, and you are allowed to let it be witnessed.',
     anchorQuestions: {
@@ -44,7 +44,7 @@ export const KNOTS: KnotData[] = [
     name: 'Grace',
     fullName: 'Knot of Grace',
     theme: 'Permission to Feel Everything',
-    movement: 'Awareness',
+    movement: 'Surviving the Current',
     movementNumber: 1,
     knotsTruth: "You don't have to earn the right to feel. Everything you're feeling is allowed. All of it.",
     anchorQuestions: {
@@ -82,7 +82,7 @@ export const KNOTS: KnotData[] = [
     name: 'Emotional Release',
     fullName: 'Knot of Emotional Release',
     theme: 'Honor the Feeling, Protect the Love',
-    movement: 'Awareness',
+    movement: 'Surviving the Current',
     movementNumber: 1,
     knotsTruth: 'Honor the feeling. Protect the love. Both belong to you, and both are possible.',
     anchorQuestions: {
@@ -117,11 +117,11 @@ export const KNOTS: KnotData[] = [
   },
   {
     id: 4,
-    name: 'Releasing Expectations',
-    fullName: 'Knot of Releasing Expectations',
-    theme: 'Letting Go of the Perfect Caregiver',
-    movement: 'Awareness',
-    movementNumber: 1,
+    name: 'Expectations',
+    fullName: 'Knot of Expectations',
+    theme: 'Letting Go of the Perfect Caregiver Myth',
+    movement: 'Loosening the Weight',
+    movementNumber: 2,
     knotsTruth: 'There is no perfect caregiver. There is only the one who keeps showing up.',
     anchorQuestions: {
       why: [
@@ -158,8 +158,8 @@ export const KNOTS: KnotData[] = [
     name: 'Humor',
     fullName: 'Knot of Humor',
     theme: 'Laughter as a Life Preserver',
-    movement: 'Awareness',
-    movementNumber: 1,
+    movement: 'Loosening the Weight',
+    movementNumber: 2,
     knotsTruth: 'Laughter cracks the grief wide open and lets in light. You deserve that light. Please read that again. You deserve that light.',
     anchorQuestions: {
       why: [
@@ -196,7 +196,7 @@ export const KNOTS: KnotData[] = [
     name: 'Joy',
     fullName: 'Knot of Joy',
     theme: 'Finding Joy in the Smallest Moments',
-    movement: 'Embodiment',
+    movement: 'Loosening the Weight',
     movementNumber: 2,
     knotsTruth: "Joy is not gone, she's waiting to be noticed. Not later. Not when it's over. Now.",
     anchorQuestions: {
@@ -234,8 +234,8 @@ export const KNOTS: KnotData[] = [
     name: 'Time Alone',
     fullName: 'Knot of Time Alone',
     theme: 'Solitude as Sacred Space',
-    movement: 'Embodiment',
-    movementNumber: 2,
+    movement: 'Return to Self & the Sacred',
+    movementNumber: 3,
     knotsTruth: "Solitude is soul-care. You don't have to earn it. You just get to claim it.",
     anchorQuestions: {
       why: [
@@ -272,8 +272,8 @@ export const KNOTS: KnotData[] = [
     name: 'Sacred Moments',
     fullName: 'Knot of Sacred Moments',
     theme: 'Creating & Savoring Them',
-    movement: 'Embodiment',
-    movementNumber: 2,
+    movement: 'Return to Self & the Sacred',
+    movementNumber: 3,
     knotsTruth: "Sacredness isn't found in perfection. It's woven into presence. Small moments in time become sacred moments in memory — for you, and for the one receiving your care.",
     anchorQuestions: {
       why: [
@@ -310,8 +310,8 @@ export const KNOTS: KnotData[] = [
     name: 'Ritual',
     fullName: 'Knot of Ritual',
     theme: 'Anchoring It In',
-    movement: 'Embodiment',
-    movementNumber: 2,
+    movement: 'Return to Self & the Sacred',
+    movementNumber: 3,
     knotsTruth: "You don't need to add more to your plate. Just infuse what's already there with presence. That's a ritual. And that's enough.",
     anchorQuestions: {
       why: [
@@ -348,8 +348,8 @@ export const KNOTS: KnotData[] = [
     name: 'Permission',
     fullName: 'Knot of Permission',
     theme: 'Learning to Receive Help Without Guilt',
-    movement: 'Embodiment',
-    movementNumber: 2,
+    movement: 'Return to Self & the Sacred',
+    movementNumber: 3,
     knotsTruth: "The Knot of Permission does not make your load lighter. But it makes it bearable. It helps you honor your own struggle — and that changes everything.",
     anchorQuestions: {
       why: [
@@ -386,7 +386,7 @@ export const KNOTS: KnotData[] = [
     name: 'Self-Compassion',
     fullName: 'Knot of Self-Compassion',
     theme: 'Treating Yourself Like Someone You Love',
-    movement: 'Integration',
+    movement: 'Return to Self & the Sacred',
     movementNumber: 3,
     knotsTruth: 'The compassion you so freely give to others was always meant for you too.',
     anchorQuestions: {
@@ -424,7 +424,7 @@ export const KNOTS: KnotData[] = [
     name: 'Self-Care',
     fullName: 'Knot of Self-Care',
     theme: 'Caregiving Is Not Your Whole Identity',
-    movement: 'Integration',
+    movement: 'Return to Self & the Sacred',
     movementNumber: 3,
     knotsTruth: "You can't pour from an empty cup. Refill yourself — not just for them, but for you.",
     anchorQuestions: {
@@ -462,7 +462,7 @@ export const KNOTS: KnotData[] = [
     name: 'Boundaries',
     fullName: 'Knot of Boundaries',
     theme: 'Boundaries Are Not Betrayal',
-    movement: 'Integration',
+    movement: 'Return to Self & the Sacred',
     movementNumber: 3,
     knotsTruth: "You are not being selfish for needing space. You are wise for honoring your limits. Boundaries don't end love — they protect it.",
     anchorQuestions: {
@@ -500,7 +500,7 @@ export const KNOTS: KnotData[] = [
     name: 'Witnessing',
     fullName: 'Knot of Witnessing',
     theme: 'Meeting Life With Presence Instead of Control',
-    movement: 'Integration',
+    movement: 'Return to Self & the Sacred',
     movementNumber: 3,
     knotsTruth: "You don't have to fix everything. Your presence is often enough.",
     anchorQuestions: {
@@ -538,8 +538,8 @@ export const KNOTS: KnotData[] = [
     name: 'Surrender',
     fullName: 'Knot of Surrender',
     theme: 'Let the Grief Come',
-    movement: 'Integration',
-    movementNumber: 3,
+    movement: 'Trust',
+    movementNumber: 4,
     knotsTruth: 'They are still here. And you are already grieving. Both of those things are true. Both of them are allowed.',
     openingQuote: 'Surrender is not defeat. It is wisdom. It is the recognition that some things cannot be carried through force…only through Grace.',
     anchorQuestions: {
@@ -577,7 +577,7 @@ export const KNOTS: KnotData[] = [
     name: 'Forgiveness',
     fullName: 'Knot of Forgiveness',
     theme: 'Setting Down What You Were Never Meant to Carry',
-    movement: 'Peace',
+    movement: 'Trust',
     movementNumber: 4,
     knotsTruth: 'Forgiveness is not about making peace with what happened. It is about releasing what still binds you to it.',
     openingQuote: "Forgiveness is not about making peace with what happened. It's about releasing what still binds you to it.",
@@ -615,8 +615,8 @@ export const KNOTS: KnotData[] = [
     id: 17,
     name: 'Peace',
     fullName: 'Knot of Peace',
-    theme: 'The Sea Grows Still',
-    movement: 'Peace',
+    theme: 'Calming the Storm Within',
+    movement: 'Trust',
     movementNumber: 4,
     knotsTruth: 'The sea may not always grow still, but something in you can.',
     anchorQuestions: {
@@ -652,10 +652,10 @@ export const KNOTS: KnotData[] = [
 ];
 
 export const MOVEMENTS = [
-  { number: 1, name: 'Awareness', description: 'Recognizing what is true', knotIds: [1, 2, 3, 4, 5] },
-  { number: 2, name: 'Embodiment', description: 'Living what you know', knotIds: [6, 7, 8, 9, 10] },
-  { number: 3, name: 'Integration', description: 'Weaving it into who you are', knotIds: [11, 12, 13, 14, 15] },
-  { number: 4, name: 'Peace', description: 'Arriving home to yourself', knotIds: [16, 17] },
+  { number: 1, name: 'Surviving the Current', description: 'Staying afloat in the hardest moments', knotIds: [1, 2, 3] },
+  { number: 2, name: 'Loosening the Weight', description: 'Releasing what you have been carrying', knotIds: [4, 5, 6] },
+  { number: 3, name: 'Return to Self & the Sacred', description: 'Coming back to who you were before', knotIds: [7, 8, 9, 10, 11, 12, 13, 14] },
+  { number: 4, name: 'Trust', description: 'Softening into what cannot be forced or fixed', knotIds: [15, 16, 17] },
 ];
 
 export function getKnotById(id: number): KnotData | undefined {
@@ -726,13 +726,13 @@ export const MOVEMENT_REFLECTIONS: Record<string, {
   color: string;
   questions: { id: string; label: string; text: string }[];
 }> = {
-  Awareness: {
+  'Surviving the Current': {
     movementNumber: 1,
-    theme: 'Recognizing What Is True',
+    theme: 'Surviving the Current',
     color: '#4A7C6F',
     questions: [
       {
-        id: 'awareness-1',
+        id: 'surviving-1',
         label: 'Looking Back',
         text: 'Looking across all five Awareness knots, which truth landed most deeply in you — and why do you think that is?',
       },
@@ -743,13 +743,13 @@ export const MOVEMENT_REFLECTIONS: Record<string, {
       },
     ],
   },
-  Embodiment: {
+  'Loosening the Weight': {
     movementNumber: 2,
     theme: 'Living What You Know',
     color: '#C49A6C',
     questions: [
       {
-        id: 'embodiment-1',
+        id: 'loosening-1',
         label: 'What Resisted',
         text: 'Which of the five Embodiment knots felt most foreign or difficult to you — and what does that resistance tell you about where you still need space to grow?',
       },
@@ -760,13 +760,13 @@ export const MOVEMENT_REFLECTIONS: Record<string, {
       },
     ],
   },
-  Integration: {
+  'Return to Self & the Sacred': {
     movementNumber: 3,
-    theme: 'Weaving It Into Who You Are',
+    theme: 'Return to Self & the Sacred',
     color: '#B8847A',
     questions: [
       {
-        id: 'integration-1',
+        id: 'return-1',
         label: 'The Unfinished Places',
         text: 'As you look across the Integration knots, where do you feel the most unfinished — and is that okay? What does it mean to integrate something without perfecting it?',
       },
@@ -777,13 +777,13 @@ export const MOVEMENT_REFLECTIONS: Record<string, {
       },
     ],
   },
-  Peace: {
+  'Trust': {
     movementNumber: 4,
-    theme: 'Arriving Home to Yourself',
+    theme: 'Trust',
     color: '#7C6F4A',
     questions: [
       {
-        id: 'peace-1',
+        id: 'trust-1',
         label: 'What Peace Means Now',
         text: 'What does peace mean to you now, after walking through Forgiveness and Peace? How has its definition changed from what you thought it was when you began?',
       },

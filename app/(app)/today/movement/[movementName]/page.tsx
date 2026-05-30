@@ -9,10 +9,10 @@ import {
 } from '@/lib/progress-store';
 
 const movementColors: Record<string, string> = {
-  Awareness: '#4A7C6F',
-  Embodiment: '#C49A6C',
-  Integration: '#B8847A',
-  Peace: '#7C6F4A',
+  'Surviving the Current': '#4A7C6F',
+  'Loosening the Weight': '#C49A6C',
+  'Return to Self & the Sacred': '#B8847A',
+  'Trust': '#7C6F4A',
 };
 
 export default function MovementDeepDivePage() {

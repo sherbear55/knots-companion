@@ -1,19 +1,22 @@
 import Link from 'next/link';
 
 const knots = [
-  { id: 1, name: 'Being Seen', movement: 'Awareness' }, { id: 2, name: 'Grace', movement: 'Awareness' },
-  { id: 3, name: 'Emotional Release', movement: 'Awareness' }, { id: 4, name: 'Releasing Expectations', movement: 'Awareness' },
-  { id: 5, name: 'Humor', movement: 'Awareness' }, { id: 6, name: 'Joy', movement: 'Embodiment' },
-  { id: 7, name: 'Time Alone', movement: 'Embodiment' }, { id: 8, name: 'Sacred Moments', movement: 'Embodiment' },
-  { id: 9, name: 'Ritual', movement: 'Embodiment' }, { id: 10, name: 'Permission', movement: 'Embodiment' },
-  { id: 11, name: 'Self-Compassion', movement: 'Integration' }, { id: 12, name: 'Self-Care', movement: 'Integration' },
-  { id: 13, name: 'Boundaries', movement: 'Integration' }, { id: 14, name: 'Witnessing', movement: 'Integration' },
-  { id: 15, name: 'Surrender', movement: 'Integration' }, { id: 16, name: 'Forgiveness', movement: 'Peace' },
-  { id: 17, name: 'Peace', movement: 'Peace' },
+  { id: 1, name: 'Being Seen', movement: 'Surviving the Current' }, { id: 2, name: 'Grace', movement: 'Surviving the Current' },
+  { id: 3, name: 'Emotional Release', movement: 'Surviving the Current' }, { id: 4, name: 'Expectations', movement: 'Loosening the Weight' },
+  { id: 5, name: 'Humor', movement: 'Loosening the Weight' }, { id: 6, name: 'Joy', movement: 'Loosening the Weight' },
+  { id: 7, name: 'Time Alone', movement: 'Return to Self & the Sacred' }, { id: 8, name: 'Sacred Moments', movement: 'Return to Self & the Sacred' },
+  { id: 9, name: 'Ritual', movement: 'Return to Self & the Sacred' }, { id: 10, name: 'Permission', movement: 'Return to Self & the Sacred' },
+  { id: 11, name: 'Self-Compassion', movement: 'Return to Self & the Sacred' }, { id: 12, name: 'Self-Care', movement: 'Return to Self & the Sacred' },
+  { id: 13, name: 'Boundaries', movement: 'Return to Self & the Sacred' }, { id: 14, name: 'Witnessing', movement: 'Return to Self & the Sacred' },
+  { id: 15, name: 'Surrender', movement: 'Trust' }, { id: 16, name: 'Forgiveness', movement: 'Trust' },
+  { id: 17, name: 'Peace', movement: 'Trust' },
 ];
 
 const movementColors: Record<string, string> = {
-  Awareness: '#4A7C6F', Embodiment: '#C49A6C', Integration: '#B8847A', Peace: '#7C6F4A',
+  'Surviving the Current': '#4A7C6F',
+  'Loosening the Weight': '#C49A6C',
+  'Return to Self & the Sacred': '#B8847A',
+  'Trust': '#7C6F4A',
 };
 
 const features = [
@@ -139,7 +142,7 @@ export default function HomePage() {
       <section className="py-12 px-5" style={{ backgroundColor: 'rgba(255,255,255,0.75)' }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-xl font-bold text-center mb-2" style={{ color: '#2C2C2C' }}>The 17 Knots</h2>
-          <p className="text-sm text-center mb-8" style={{ color: '#9CA3AF' }}>Four movements · One path home to yourself</p>
+          <p className="text-sm text-center mb-8" style={{ color: '#9CA3AF' }}>Four Movements · One path home to yourself</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {knots.map((knot) => {
               const color = movementColors[knot.movement];
