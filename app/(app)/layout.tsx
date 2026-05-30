@@ -54,6 +54,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }}
       />
 
+      {/* Top branding bar */}
+      <header
+        className="sticky top-0 z-40 border-b"
+        style={{
+          backgroundColor: 'rgba(250,247,242,0.88)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderColor: '#E8F0ED',
+        }}
+      >
+        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center gap-2" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A7C6F' }}>
+            <span className="text-white text-sm">∞</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold leading-tight" style={{ color: '#2C2C2C' }}>Knots of Survival</p>
+            <p className="text-xs font-medium leading-tight" style={{ color: '#4A7C6F' }}>Caregiver Companion</p>
+          </div>
+        </div>
+      </header>
+
       {/* Page content */}
       <main className="flex-1 pb-20 max-w-lg mx-auto w-full" style={{ position: 'relative', zIndex: 1 }}>
         {children}

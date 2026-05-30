@@ -67,8 +67,8 @@ export default function HomePage() {
               <span className="text-white text-base">∞</span>
             </div>
             <div>
-              <p className="text-xs font-semibold leading-tight" style={{ color: '#2C2C2C' }}>Knots of Survival</p>
-              <p className="text-xs leading-tight" style={{ color: '#9CA3AF' }}>Caregiver Companion</p>
+              <p className="text-sm font-bold leading-tight" style={{ color: '#2C2C2C' }}>Knots of Survival</p>
+              <p className="text-sm font-medium leading-tight" style={{ color: '#4A7C6F' }}>Caregiver Companion</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function HomePage() {
         <p className="text-lg leading-relaxed mb-4" style={{ color: '#6B7280' }}>
           A daily reflection companion for caregivers — grounded in 17 knots of wisdom, one honest question at a time.
         </p>
-        <p className="text-sm italic mb-8" style={{ color: '#C49A6C' }}>
+        <p className="text-sm italic mb-8" style={{ color: '#7D5C2E', textShadow: '0 1px 3px rgba(250,247,242,0.8)' }}>
           &ldquo;You are not invisible. What you are carrying is real, and you are allowed to let it be witnessed.&rdquo;
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
