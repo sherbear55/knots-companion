@@ -40,7 +40,7 @@ export default function HistoryPage() {
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => {
-            const knot = getKnotById(entry.knotId);
+            const knot = entry.knotId != null ? getKnotById(entry.knotId) : undefined;
             const color = typeColors[entry.type];
             return (
               <div key={entry.id} className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#ffffff', border: '1px solid #E8F0ED' }}>

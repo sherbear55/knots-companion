@@ -113,7 +113,7 @@ export default function DashboardPage() {
           </div>
           <div className="space-y-3">
             {recentEntries.map((entry) => {
-              const knot = getKnotById(entry.knotId);
+              const knot = entry.knotId != null ? getKnotById(entry.knotId) : undefined;
               const color = movementColors[knot?.movement ?? 'Awareness'];
               return (
                 <div key={entry.id} className="rounded-xl p-3" style={{ backgroundColor: '#FAF7F2' }}>
