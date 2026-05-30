@@ -24,9 +24,10 @@ export default function JourneyPage() {
 
   const getKnotStats = (knotId: number) => {
     const kp = progress[knotId];
-    if (!kp) return { done: 0, total: 22, pct: 0, truthDone: false };
+    if (!kp) return { done: 0, total: 21, pct: 0, truthDone: false };
     const done = kp.usedIndices.length + (kp.completedTruth ? 1 : 0);
-    return { done, total: 22, pct: Math.round((done / 22) * 100), truthDone: kp.completedTruth };
+    const questions = kp.usedIndices.length;
+    return { done: questions, total: 21, pct: Math.round((questions / 21) * 100), truthDone: kp.completedTruth };
   };
 
   const getMovementDeepDiveStats = (movementName: string) => {
@@ -145,7 +146,7 @@ export default function JourneyPage() {
                           <span className="text-xs font-semibold" style={{ color: c.text }}>Complete</span>
                         ) : hasStarted ? (
                           <div>
-                            <p className="text-xs font-semibold" style={{ color: c.text }}>{stats.done}/22</p>
+                            <p className="text-xs font-semibold" style={{ color: c.text }}>{stats.done}/21</p>
                             <p className="text-xs" style={{ color: '#9CA3AF' }}>done</p>
                           </div>
                         ) : (
@@ -208,7 +209,7 @@ export default function JourneyPage() {
       </div>
 
       <p className="text-xs text-center mt-6" style={{ color: '#9CA3AF' }}>
-        Each knot: 1 Knot&apos;s Truth + 21 questions = 22 sessions.<br />
+        Each knot: 1 Knot&apos;s Truth + 21 reflection questions.<br />
         Plus 2 Deep Dive reflections per movement = <strong>365 days</strong> — one full year.
       </p>
     </div>
