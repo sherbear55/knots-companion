@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { KNOTS, getKnotById } from '@/lib/knots-data';
+import { getKnotById } from '@/lib/knots-data';
 import {
   getKnotProgress,
   getRandomUnusedQuestion,
@@ -15,6 +15,15 @@ import {
   BOOK_QUESTION_INDICES,
   ResolvedQuestion,
 } from '@/lib/progress-store';
+import {
+  getCurrentUser,
+  getKnotProgressCloud,
+  markQuestionUsedCloud,
+  markTruthCompletedCloud,
+  saveJournalEntryCloud,
+  getJournalCountCloud,
+} from '@/lib/supabase/db';
+import { getQuestionByFlatIndex } from '@/lib/progress-store';
 
 const typeConfig: Record<string, { label: string; color: string; bg: string; prompt: string }> = {
   truth: { label: "The Knot's Truth",  color: '#C49A6C', bg: '#C49A6C18', prompt: 'Sit with this truth. What does it stir in you?' },
@@ -25,7 +34,6 @@ const typeConfig: Record<string, { label: string; color: string; bg: string; pro
 
 type Phase = 'truth' | 'question' | 'allDone';
 
-// ── Signup prompt modal ───────────────────────────────────────────────────────
 function SignupModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4"
@@ -33,11 +41,10 @@ function SignupModal({ onClose }: { onClose: () => void }) {
       <div className="w-full max-w-sm rounded-3xl p-7 text-center"
         style={{ backgroundColor: '#FAF7F2', boxShadow: '0 -4px 40px rgba(0,0,0,0.2)' }}>
         <p className="text-3xl mb-3">🪢</p>
-        <h2 className="text-lg font-bold mb-2" style={{ color: '#2C2C2C' }}>
-          Your words matter.
-        </h2>
+        <h2 className="text-lg font-bold mb-2" style={{ color: '#2C2C2C' }}>Your words matter.</h2>
         <p className="text-sm leading-relaxed mb-5" style={{ color: '#6B7280' }}>
-          You&apos;ve written {DEMO_SAVE_LIMIT} reflections. Create an account to save your journey and keep building — your entries will always be there when you return.
+          You&apos;ve written {DEMO_SAVE_LIMIT} reflections. Create an account to save your journey
+          and keep building — your entries will always be there when you return.
         </p>
         <Link href="/signup"
           className="block w-full py-3.5 rounded-xl text-sm font-semibold text-white mb-3"
@@ -49,9 +56,7 @@ function SignupModal({ onClose }: { onClose: () => void }) {
           style={{ color: '#9CA3AF', border: '1px solid #E8F0ED' }}>
           Keep exploring (entries won&apos;t be saved)
         </button>
-        <p className="text-xs mt-3" style={{ color: '#9CA3AF' }}>
-          14-day free trial · Cancel anytime
-        </p>
+        <p className="text-xs mt-3" style={{ color: '#9CA3AF' }}>14-day free trial · Cancel anytime</p>
       </div>
     </div>
   );
@@ -62,63 +67,92 @@ export default function TodayKnotPage() {
   const knotId = Number(params.knotId);
   const knot = getKnotById(knotId);
 
-  const [phase, setPhase] = useState<Phase>('truth');
-  const [resolved, setResolved] = useState<ResolvedQuestion | null>(null);
-  const [response, setResponse] = useState('');
-  const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [phase, setPhase]                 = useState<Phase>('truth');
+  const [resolved, setResolved]           = useState<ResolvedQuestion | null>(null);
+  const [response, setResponse]           = useState('');
+  const [saved, setSaved]                 = useState(false);
+  const [saving, setSaving]               = useState(false);
   const [questionsLeft, setQuestionsLeft] = useState(21);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [tier, setTier] = useState<'demo' | 'free' | 'builder'>('demo');
+  const [tier, setTier]                   = useState<'demo' | 'free' | 'builder'>('demo');
+  const [isLoggedIn, setIsLoggedIn]       = useState(false);
+  const [demoCount, setDemoCount]         = useState(0);
 
   useEffect(() => {
     if (!knot) return;
-    const currentTier = getUserTier();
-    setTier(currentTier);
-    const bookOnly = currentTier === 'free';
-    const kp = getKnotProgress(knotId);
 
-    const pool = bookOnly ? BOOK_QUESTION_INDICES : Array.from({ length: 21 }, (_, i) => i);
-    const left = pool.filter(i => !kp.usedIndices.includes(i)).length;
-    setQuestionsLeft(left);
+    async function init() {
+      const user = await getCurrentUser();
+      const loggedIn = !!user;
+      setIsLoggedIn(loggedIn);
 
-    if (!kp.completedTruth) {
-      setPhase('truth');
-    } else if (left === 0) {
-      setPhase('allDone');
-    } else {
-      const q = getRandomUnusedQuestion(knotId, knot, bookOnly);
-      setResolved(q);
-      setPhase('question');
+      const currentTier = getUserTier();
+      setTier(currentTier);
+      const bookOnly = currentTier === 'free';
+
+      // Load progress from cloud if logged in, otherwise localStorage
+      const kp = loggedIn
+        ? await getKnotProgressCloud(knotId)
+        : getKnotProgress(knotId);
+
+      const pool = bookOnly ? BOOK_QUESTION_INDICES : Array.from({ length: 21 }, (_, i) => i);
+      const left = pool.filter(i => !kp.usedIndices.includes(i)).length;
+      setQuestionsLeft(left);
+
+      // Demo save count (only relevant for demo users)
+      if (!loggedIn) {
+        setDemoCount(getDemoSaveCount());
+      }
+
+      if (!kp.completedTruth) {
+        setPhase('truth');
+      } else if (left === 0) {
+        setPhase('allDone');
+      } else {
+        // Pick random unused question
+        const available = pool.filter(i => !kp.usedIndices.includes(i));
+        const pick = available[Math.floor(Math.random() * available.length)];
+        setResolved(getQuestionByFlatIndex(knot!, pick));
+        setPhase('question');
+      }
     }
+
+    init();
   }, [knotId, knot]);
 
-  if (!knot) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p style={{ color: '#9CA3AF' }}>Knot not found.</p>
-      </div>
-    );
-  }
+  if (!knot) return (
+    <div className="flex items-center justify-center h-64">
+      <p style={{ color: '#9CA3AF' }}>Knot not found.</p>
+    </div>
+  );
 
-  /** Returns true if we should block saving (demo limit reached) */
-  const isDemoLimitReached = () => tier === 'demo' && getDemoSaveCount() >= DEMO_SAVE_LIMIT;
+  const isDemoLimitReached = () => !isLoggedIn && getDemoSaveCount() >= DEMO_SAVE_LIMIT;
 
   const handleSaveTruth = async () => {
     if (!response.trim()) return;
     if (isDemoLimitReached()) { setShowSignupModal(true); return; }
     setSaving(true);
     await new Promise((r) => setTimeout(r, 700));
-    markTruthCompleted(knotId);
-    saveJournalEntry({
+
+    const entry = {
       id: Date.now().toString(),
       knotId, knotName: knot.name,
-      flatIndex: -1, type: 'truth',
+      flatIndex: -1, type: 'truth' as const,
       question: knot.knotsTruth,
       isFromBook: true,
       response,
       createdAt: new Date().toISOString(),
-    });
+    };
+
+    if (isLoggedIn) {
+      await markTruthCompletedCloud(knotId);
+      await saveJournalEntryCloud(entry);
+    } else {
+      markTruthCompleted(knotId);
+      saveJournalEntry(entry);
+      setDemoCount(getDemoSaveCount());
+    }
+
     setSaving(false);
     setSaved(true);
   };
@@ -128,8 +162,8 @@ export default function TodayKnotPage() {
     if (isDemoLimitReached()) { setShowSignupModal(true); return; }
     setSaving(true);
     await new Promise((r) => setTimeout(r, 700));
-    markQuestionUsed(knotId, resolved.flatIndex);
-    saveJournalEntry({
+
+    const entry = {
       id: Date.now().toString(),
       knotId, knotName: knot.name,
       flatIndex: resolved.flatIndex,
@@ -138,23 +172,40 @@ export default function TodayKnotPage() {
       isFromBook: resolved.isFromBook,
       response,
       createdAt: new Date().toISOString(),
-    });
+    };
+
+    if (isLoggedIn) {
+      await markQuestionUsedCloud(knotId, resolved.flatIndex);
+      await saveJournalEntryCloud(entry);
+    } else {
+      markQuestionUsed(knotId, resolved.flatIndex);
+      saveJournalEntry(entry);
+      setDemoCount(getDemoSaveCount());
+    }
+
     setSaving(false);
     setSaved(true);
     setQuestionsLeft((q) => q - 1);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     setSaved(false);
     setResponse('');
     setPhase('question');
     const bookOnly = tier === 'free';
-    const q = getRandomUnusedQuestion(knotId, knot, bookOnly);
-    setResolved(q);
+
+    const kp = isLoggedIn
+      ? await getKnotProgressCloud(knotId)
+      : getKnotProgress(knotId);
+
+    const pool = bookOnly ? BOOK_QUESTION_INDICES : Array.from({ length: 21 }, (_, i) => i);
+    const available = pool.filter(i => !kp.usedIndices.includes(i));
+    if (available.length === 0) { setPhase('allDone'); return; }
+    const pick = available[Math.floor(Math.random() * available.length)];
+    setResolved(getQuestionByFlatIndex(knot, pick));
   };
 
   const wordCount = response.trim() ? response.trim().split(/\s+/).length : 0;
-  const demoCount = tier === 'demo' ? getDemoSaveCount() : 0;
   const demoRemaining = Math.max(0, DEMO_SAVE_LIMIT - demoCount);
 
   // ── All done ──────────────────────────────────────────────────────────────
@@ -209,8 +260,8 @@ export default function TodayKnotPage() {
   return (
     <>
       {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
-
       <div className="px-4 pt-8 pb-4">
+
         {/* Back + header */}
         <div className="flex items-center gap-3 mb-6">
           <Link href="/journey" className="p-1.5 rounded-lg" style={{ color: '#4A7C6F' }}>
@@ -218,23 +269,29 @@ export default function TodayKnotPage() {
           </Link>
           <div className="flex-1">
             <p className="text-xs" style={{ color: '#9CA3AF' }}>
-              {isTruth
-                ? 'Beginning this knot'
-                : tier === 'demo'
+              {isTruth ? 'Beginning this knot'
+                : !isLoggedIn
                   ? `${demoRemaining} free save${demoRemaining !== 1 ? 's' : ''} remaining · ${questionsLeft} question${questionsLeft !== 1 ? 's' : ''} left`
                   : `${questionsLeft} reflection${questionsLeft !== 1 ? 's' : ''} remaining`}
             </p>
             <h1 className="text-base font-semibold" style={{ color: '#2C2C2C' }}>{knot.fullName}</h1>
           </div>
+          {/* Cloud save indicator */}
+          {isLoggedIn && (
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#4A7C6F18', color: '#4A7C6F' }}>
+              ☁ Saved
+            </span>
+          )}
         </div>
 
-        {/* Demo nudge banner */}
-        {tier === 'demo' && demoRemaining <= 1 && demoRemaining > 0 && !isTruth && (
+        {/* Demo nudge */}
+        {!isLoggedIn && demoRemaining <= 1 && demoRemaining > 0 && !isTruth && (
           <div className="rounded-xl px-4 py-3 mb-4 flex items-center gap-3"
             style={{ backgroundColor: '#C49A6C18', border: '1px solid #C49A6C44' }}>
             <span className="text-base">✨</span>
             <p className="text-xs leading-snug" style={{ color: '#7D5C2E' }}>
-              This is your last free save. <Link href="/signup" className="font-semibold underline">Create an account</Link> to keep your journey.
+              This is your last free save.{' '}
+              <Link href="/signup" className="font-semibold underline">Create an account</Link> to keep your journey.
             </p>
           </div>
         )}
@@ -257,7 +314,7 @@ export default function TodayKnotPage() {
           )}
         </div>
 
-        {/* The question / truth */}
+        {/* Question / truth card */}
         <div className="rounded-2xl p-5 mb-5" style={{ backgroundColor: '#ffffff', border: '1px solid #E8F0ED' }}>
           {isTruth && (
             <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#C49A6C' }}>
@@ -269,7 +326,6 @@ export default function TodayKnotPage() {
             {currentQuestion}
           </p>
           <p className="text-xs mt-4 italic" style={{ color: '#9CA3AF' }}>{config.prompt}</p>
-
           {isTruth && (
             <p className="text-xs mt-3 leading-relaxed" style={{ color: '#6B7280' }}>
               After reflecting on this truth, your reflection questions for this knot will begin — each visit, a fresh question chosen just for you.
@@ -277,7 +333,7 @@ export default function TodayKnotPage() {
           )}
         </div>
 
-        {/* Journal area */}
+        {/* Journal */}
         <div className="rounded-2xl overflow-hidden mb-5" style={{ backgroundColor: '#ffffff', border: '1px solid #E8F0ED' }}>
           <div className="px-4 pt-4 pb-2" style={{ borderBottom: '1px solid #E8F0ED' }}>
             <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9CA3AF' }}>Your Reflection</p>
@@ -292,7 +348,11 @@ export default function TodayKnotPage() {
             <span className="text-xs" style={{ color: '#9CA3AF' }}>
               {wordCount > 0 ? `${wordCount} word${wordCount !== 1 ? 's' : ''}` : 'No minimum — write what comes'}
             </span>
-            {saved && <span className="text-xs font-medium" style={{ color: '#4A7C6F' }}>✓ Saved</span>}
+            {saved && (
+              <span className="text-xs font-medium" style={{ color: '#4A7C6F' }}>
+                {isLoggedIn ? '☁ Saved to your account' : '✓ Saved'}
+              </span>
+            )}
           </div>
         </div>
 
@@ -311,7 +371,8 @@ export default function TodayKnotPage() {
           </button>
         ) : (
           <div className="space-y-3">
-            <div className="w-full py-3.5 rounded-xl text-sm font-semibold text-center" style={{ backgroundColor: '#E8F0ED', color: '#4A7C6F' }}>
+            <div className="w-full py-3.5 rounded-xl text-sm font-semibold text-center"
+              style={{ backgroundColor: '#E8F0ED', color: '#4A7C6F' }}>
               ✓ Reflection saved
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -329,7 +390,7 @@ export default function TodayKnotPage() {
           </div>
         )}
 
-        {/* Knot's truth footer (on question view) */}
+        {/* Knot truth footer */}
         {!isTruth && (
           <div className="mt-5 rounded-2xl p-4" style={{ backgroundColor: '#FAF7F2', border: '1px solid #C49A6C33' }}>
             <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#C49A6C' }}>The Knot&apos;s Truth</p>
