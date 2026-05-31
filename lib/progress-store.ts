@@ -3,8 +3,15 @@
 import { KnotData } from '@/types';
 
 const PROGRESS_KEY = 'knots_question_progress';
-const JOURNAL_KEY = 'knots_journal_entries';
+const JOURNAL_KEY  = 'knots_journal_entries';
 const MOVEMENT_KEY = 'knots_movement_progress';
+const TIER_KEY     = 'knots_user_tier';
+
+export type UserTier = 'demo' | 'free' | 'builder';
+
+/** Flat indices that correspond to the 3 "from book" questions per knot */
+export const BOOK_QUESTION_INDICES = [0, 7, 14]; // why[0], what[0], where[0]
+export const DEMO_SAVE_LIMIT = 3;
 
 export interface KnotProgress {
   completedTruth: boolean;
@@ -27,6 +34,18 @@ export interface SavedEntry {
   questionLabel?: string;
   response: string;
   createdAt: string;
+}
+
+// ── Tier management ───────────────────────────────────────────────────────────
+
+export function getUserTier(): UserTier {
+  if (typeof window === 'undefined') return 'demo';
+  return (localStorage.getItem(TIER_KEY) as UserTier) ?? 'demo';
+}
+
+export function setUserTier(tier: UserTier) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(TIER_KEY, tier);
 }
 
 // ── Knot progress ─────────────────────────────────────────────────────────────
@@ -104,6 +123,11 @@ export function saveJournalEntry(entry: SavedEntry) {
   localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
 }
 
+/** Total number of journal entries saved (used to enforce demo limit) */
+export function getDemoSaveCount(): number {
+  return getJournalEntries().length;
+}
+
 // ── Question helpers ──────────────────────────────────────────────────────────
 
 export interface ResolvedQuestion {
@@ -140,9 +164,15 @@ export function getQuestionByFlatIndex(knot: KnotData, flatIndex: number): Resol
   }
 }
 
-export function getRandomUnusedQuestion(knotId: number, knot: KnotData): ResolvedQuestion | null {
+export function getRandomUnusedQuestion(
+  knotId: number,
+  knot: KnotData,
+  /** If true, only pick from the 3 book questions (free tier) */
+  bookOnly = false
+): ResolvedQuestion | null {
   const { usedIndices } = getKnotProgress(knotId);
-  const available = Array.from({ length: 21 }, (_, i) => i).filter((i) => !usedIndices.includes(i));
+  const pool = bookOnly ? BOOK_QUESTION_INDICES : Array.from({ length: 21 }, (_, i) => i);
+  const available = pool.filter((i) => !usedIndices.includes(i));
   if (available.length === 0) return null;
   const pick = available[Math.floor(Math.random() * available.length)];
   return getQuestionByFlatIndex(knot, pick);

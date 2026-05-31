@@ -1,8 +1,19 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { KNOTS, MOVEMENTS, MOVEMENT_REFLECTIONS } from '@/lib/knots-data';
-import { getAllProgress, getAllMovementProgress, KnotProgress, MovementProgress } from '@/lib/progress-store';
+import {
+  getAllProgress,
+  getAllMovementProgress,
+  getUserTier,
+  BOOK_QUESTION_INDICES,
+  DEMO_SAVE_LIMIT,
+  getDemoSaveCount,
+  KnotProgress,
+  MovementProgress,
+  UserTier,
+} from '@/lib/progress-store';
 
 const movementColors: Record<string, { bg: string; text: string; border: string; dark: string }> = {
   'Surviving the Current':       { bg: '#4A7C6F18', text: '#4A7C6F', border: '#4A7C6F33', dark: '#2E5249' },
@@ -16,17 +27,29 @@ export default function JourneyPage() {
   const [progress, setProgress] = useState<Record<number, KnotProgress>>({});
   const [movementProgress, setMovementProgress] = useState<Record<string, MovementProgress>>({});
   const [activeMovement, setActiveMovement] = useState<number | null>(null);
+  const [tier, setTier] = useState<UserTier>('demo');
+  const [demoCount, setDemoCount] = useState(0);
 
   useEffect(() => {
     setProgress(getAllProgress());
     setMovementProgress(getAllMovementProgress());
+    setTier(getUserTier());
+    setDemoCount(getDemoSaveCount());
   }, []);
+
+  const isLocked = tier === 'demo' || tier === 'free'; // Movement deep dives need builder
+
+  /** For a given knot, how many questions are usable in current tier */
+  const getQuestionPool = () => (tier === 'free' ? BOOK_QUESTION_INDICES.length : 21);
 
   const getKnotStats = (knotId: number) => {
     const kp = progress[knotId];
-    if (!kp) return { done: 0, total: 21, pct: 0, truthDone: false };
-    const questions = kp.usedIndices.length;
-    return { done: questions, total: 21, pct: Math.round((questions / 21) * 100), truthDone: kp.completedTruth };
+    const pool = getQuestionPool();
+    if (!kp) return { done: 0, total: pool, pct: 0, truthDone: false };
+    const used = kp.usedIndices.filter(i =>
+      tier === 'free' ? BOOK_QUESTION_INDICES.includes(i) : true
+    ).length;
+    return { done: used, total: pool, pct: Math.round((used / pool) * 100), truthDone: kp.completedTruth };
   };
 
   const getMovementDeepDiveStats = (movementName: string) => {
@@ -37,22 +60,65 @@ export default function JourneyPage() {
   };
 
   const handleKnotSelect = (knotId: number) => router.push(`/today/${knotId}`);
-  const handleMovementDeepDive = (movementName: string) => router.push(`/today/movement/${encodeURIComponent(movementName)}`);
+  const handleMovementDeepDive = (movementName: string) => {
+    if (tier === 'demo' || tier === 'free') return; // locked
+    router.push(`/today/movement/${encodeURIComponent(movementName)}`);
+  };
 
   const filteredMovements = MOVEMENTS.filter((m) => activeMovement === null || m.number === activeMovement);
 
+  const demoRemaining = Math.max(0, DEMO_SAVE_LIMIT - demoCount);
+
   return (
     <div className="px-4 pt-6 pb-4">
-      <div className="mb-5">
+      <div className="mb-4">
         <h1 className="text-xl font-semibold" style={{ color: '#2C2C2C' }}>Choose Your Knot</h1>
         <p className="text-sm mt-1" style={{ color: '#4A4A4A' }}>
           Select any knot — the app picks a fresh reflection for you.
         </p>
       </div>
 
-      {/* Movement filter — wrapping grid layout */}
+      {/* Tier banner */}
+      {tier === 'demo' && (
+        <div className="rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3"
+          style={{ backgroundColor: '#C49A6C12', border: '1px solid #C49A6C44' }}>
+          <div>
+            <p className="text-xs font-semibold" style={{ color: '#7D5C2E' }}>
+              Exploring for free · {demoRemaining} save{demoRemaining !== 1 ? 's' : ''} remaining
+            </p>
+            <p className="text-xs" style={{ color: '#9CA3AF' }}>
+              3 book questions per knot · Journal doesn&apos;t persist
+            </p>
+          </div>
+          <Link href="/signup"
+            className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg"
+            style={{ backgroundColor: '#4A7C6F', color: '#ffffff' }}>
+            Upgrade
+          </Link>
+        </div>
+      )}
+
+      {tier === 'free' && (
+        <div className="rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3"
+          style={{ backgroundColor: '#4A7C6F12', border: '1px solid #4A7C6F33' }}>
+          <div>
+            <p className="text-xs font-semibold" style={{ color: '#2E5249' }}>
+              Free Tier · 3 book questions per knot
+            </p>
+            <p className="text-xs" style={{ color: '#9CA3AF' }}>
+              Upgrade to unlock all 21 questions + Movement Deep Dives
+            </p>
+          </div>
+          <Link href="/signup"
+            className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg"
+            style={{ backgroundColor: '#4A7C6F', color: '#ffffff' }}>
+            Unlock All
+          </Link>
+        </div>
+      )}
+
+      {/* Movement filter */}
       <div className="mb-5">
-        {/* All 17 button — full width row */}
         <button
           onClick={() => setActiveMovement(null)}
           className="w-full text-sm font-semibold px-4 py-2 rounded-xl border mb-2 transition-all"
@@ -63,8 +129,6 @@ export default function JourneyPage() {
           }}>
           All 17 Knots
         </button>
-
-        {/* 2×2 grid for 4 movements */}
         <div className="grid grid-cols-2 gap-2">
           {MOVEMENTS.map((m) => {
             const c = movementColors[m.name];
@@ -93,6 +157,7 @@ export default function JourneyPage() {
           const c = movementColors[movement.name];
           const deepDive = MOVEMENT_REFLECTIONS[movement.name];
           const ddStats = getMovementDeepDiveStats(movement.name);
+          const ddLocked = tier !== 'builder';
 
           return (
             <div key={movement.number}>
@@ -109,8 +174,9 @@ export default function JourneyPage() {
               <div className="space-y-2">
                 {movementKnots.map((knot) => {
                   const stats = getKnotStats(knot.id);
-                  const isComplete = stats.pct === 100;
+                  const isComplete = stats.done > 0 && stats.done >= stats.total;
                   const hasStarted = stats.done > 0;
+                  const pool = getQuestionPool();
 
                   return (
                     <button key={knot.id} onClick={() => handleKnotSelect(knot.id)}
@@ -134,6 +200,12 @@ export default function JourneyPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate" style={{ color: '#1A1A1A' }}>{knot.fullName}</p>
                         <p className="text-xs truncate" style={{ color: '#5A5A5A' }}>{knot.theme}</p>
+                        {/* Free-tier question count hint */}
+                        {(tier === 'demo' || tier === 'free') && !hasStarted && (
+                          <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>
+                            3 book questions · <span style={{ color: '#C49A6C' }}>18 locked</span>
+                          </p>
+                        )}
                         {hasStarted && (
                           <div className="mt-1.5 h-1 rounded-full" style={{ backgroundColor: '#E8F0ED' }}>
                             <div className="h-1 rounded-full transition-all"
@@ -148,7 +220,7 @@ export default function JourneyPage() {
                           <span className="text-xs font-semibold" style={{ color: c.dark }}>Complete</span>
                         ) : hasStarted ? (
                           <div>
-                            <p className="text-xs font-semibold" style={{ color: c.dark }}>{stats.done}/21</p>
+                            <p className="text-xs font-semibold" style={{ color: c.dark }}>{stats.done}/{pool}</p>
                             <p className="text-xs" style={{ color: '#6B7280' }}>done</p>
                           </div>
                         ) : (
@@ -165,29 +237,33 @@ export default function JourneyPage() {
                     onClick={() => handleMovementDeepDive(movement.name)}
                     className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-all active:scale-[0.98] mt-1"
                     style={{
-                      backgroundColor: ddStats.done === ddStats.total ? c.bg : 'rgba(255,255,255,0.92)',
-                      border: `1.5px dashed ${c.border}`,
+                      backgroundColor: ddLocked ? 'rgba(255,255,255,0.6)' : ddStats.done === ddStats.total ? c.bg : 'rgba(255,255,255,0.92)',
+                      border: `1.5px dashed ${ddLocked ? '#E8F0ED' : c.border}`,
+                      opacity: ddLocked ? 0.85 : 1,
                     }}>
                     <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-base"
-                      style={{ backgroundColor: c.bg, color: c.dark }}>
-                      ✦
+                      style={{
+                        backgroundColor: ddLocked ? '#F3F4F6' : c.bg,
+                        color: ddLocked ? '#9CA3AF' : c.dark,
+                      }}>
+                      {ddLocked ? '🔒' : '✦'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: c.dark }}>
+                      <p className="text-sm font-semibold" style={{ color: ddLocked ? '#9CA3AF' : c.dark }}>
                         {movement.name} · Deep Dive
                       </p>
-                      <p className="text-xs" style={{ color: '#5A5A5A' }}>
-                        2 movement reflections
+                      <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                        {ddLocked ? 'Unlocks with Builder subscription' : '2 movement reflections'}
                       </p>
-                      {ddStats.done > 0 && (
-                        <div className="mt-1.5 h-1 rounded-full" style={{ backgroundColor: '#E8F0ED' }}>
-                          <div className="h-1 rounded-full transition-all"
-                            style={{ width: `${Math.round((ddStats.done / ddStats.total) * 100)}%`, backgroundColor: c.dark }} />
-                        </div>
-                      )}
                     </div>
                     <div className="flex-shrink-0 text-right">
-                      {ddStats.done === ddStats.total ? (
+                      {ddLocked ? (
+                        <Link href="/signup" onClick={e => e.stopPropagation()}
+                          className="text-xs font-semibold px-2.5 py-1 rounded-lg"
+                          style={{ backgroundColor: '#4A7C6F', color: '#ffffff' }}>
+                          Unlock
+                        </Link>
+                      ) : ddStats.done === ddStats.total ? (
                         <span className="text-xs font-semibold" style={{ color: c.dark }}>Complete</span>
                       ) : ddStats.done > 0 ? (
                         <div>
@@ -206,10 +282,29 @@ export default function JourneyPage() {
         })}
       </div>
 
-      <p className="text-xs text-center mt-6" style={{ color: '#5A5A5A' }}>
-        Each knot: 1 Knot&apos;s Truth + 21 reflection questions<br />
-        Plus 2 Deep Dive reflections per movement = <strong>365 days</strong>
-      </p>
+      {/* Footer note */}
+      {tier === 'builder' ? (
+        <p className="text-xs text-center mt-6" style={{ color: '#5A5A5A' }}>
+          Each knot: 1 Knot&apos;s Truth + 21 reflection questions<br />
+          Plus 2 Deep Dive reflections per movement = <strong>365 days</strong>
+        </p>
+      ) : (
+        <div className="mt-6 rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid #E8F0ED' }}>
+          <p className="text-sm font-semibold mb-1" style={{ color: '#2C2C2C' }}>
+            365 days of guided reflection
+          </p>
+          <p className="text-xs leading-relaxed mb-4" style={{ color: '#6B7280' }}>
+            Unlock all 21 questions per knot + 4 Movement Deep Dives.<br />
+            Save your journal, track your growth.
+          </p>
+          <Link href="/signup"
+            className="inline-block px-6 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{ backgroundColor: '#4A7C6F' }}>
+            Start 14-Day Free Trial →
+          </Link>
+          <p className="text-xs mt-2" style={{ color: '#9CA3AF' }}>$6.99/month · Cancel anytime</p>
+        </div>
+      )}
     </div>
   );
 }
