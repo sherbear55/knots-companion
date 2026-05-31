@@ -65,7 +65,7 @@ export default function SignupPage() {
           <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>365 days of guided reflection — one knot at a time</p>
           <p className="text-xs mb-6 font-medium" style={{ color: '#4A7C6F' }}>14-day free trial · ${FOUNDING_PRICE_MONTHLY}/month after · Cancel anytime</p>
 
-          <form onSubmit={(e) => { e.preventDefault(); router.push('/dashboard'); }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); router.push('/plans'); }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: '#2C2C2C' }}>Your name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="First name"
