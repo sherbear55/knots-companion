@@ -24,15 +24,9 @@ export async function middleware(request: NextRequest) {
   );
 
   // Refresh session — keeps auth token alive
-  const { data: { user } } = await supabase.auth.getUser();
+  await supabase.auth.getUser();
 
   // Protected app routes — redirect to login if not authenticated
-  const isAppRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
-                     request.nextUrl.pathname.startsWith('/journey') ||
-                     request.nextUrl.pathname.startsWith('/today') ||
-                     request.nextUrl.pathname.startsWith('/history');
-
-  // Allow demo (no-account) access — only block if explicitly signed out
   // Full auth enforcement will be added when Stripe is live
   // For now: let unauthenticated users through to support the free/demo tier
 
