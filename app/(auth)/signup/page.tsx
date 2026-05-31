@@ -16,6 +16,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
 
   const pct = Math.round(((FOUNDING_SEAT_CAP - FOUNDING_SEATS_LEFT) / FOUNDING_SEAT_CAP) * 100);
 
@@ -29,7 +30,7 @@ export default function SignupPage() {
     setError('');
 
     const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
@@ -41,9 +42,45 @@ export default function SignupPage() {
       return;
     }
 
-    // Account created — move to plan selection
+    // If email confirmation is required, data.session will be null
+    if (data.user && !data.session) {
+      setNeedsConfirmation(true);
+      setLoading(false);
+      return;
+    }
+
+    // Fully signed in — move to plan selection
     router.push('/plans');
   };
+
+  // Email confirmation screen
+  if (needsConfirmation) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8"
+        style={{ backgroundColor: '#FAF7F2' }}>
+        <div className="w-full max-w-sm rounded-2xl shadow-sm p-8 text-center"
+          style={{ backgroundColor: 'rgba(255,255,255,0.94)', border: '1px solid #E8F0ED' }}>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: '#4A7C6F' }}>
+            <span className="text-white text-2xl">✉</span>
+          </div>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: '#2C2C2C' }}>Check your email</h2>
+          <p className="text-sm mb-4" style={{ color: '#6B7280' }}>
+            We sent a confirmation link to <strong>{email}</strong>.
+            Click it to activate your account, then come back to choose your plan.
+          </p>
+          <p className="text-xs mb-6" style={{ color: '#9CA3AF' }}>
+            Don&apos;t see it? Check your spam folder.
+          </p>
+          <Link href="/login"
+            className="block w-full py-3 rounded-xl text-sm font-semibold text-white text-center hover:opacity-90"
+            style={{ backgroundColor: '#4A7C6F' }}>
+            Go to Sign In →
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8"
