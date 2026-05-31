@@ -1,7 +1,7 @@
 'use client';
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   FOUNDING_PRICE_MONTHLY,
   FOUNDING_PRICE_6MONTH,
@@ -30,19 +30,32 @@ const planDetails: Record<string, { name: string; price: string; billing: string
 };
 
 function CheckoutForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const planId = searchParams.get('plan') ?? 'monthly';
   const plan = planDetails[planId] ?? planDetails.monthly;
 
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleStartTrial = async () => {
     setSubmitting(true);
-    // TODO: Replace with Stripe payment intent / subscription creation
-    await new Promise((r) => setTimeout(r, 1200));
-    router.push('/dashboard');
+    setError('');
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? 'Could not start checkout. Please try again.');
+      }
+      // Redirect to Stripe's hosted checkout page
+      window.location.href = data.url;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -86,66 +99,43 @@ function CheckoutForm() {
           <p className="text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>{plan.chargeNote}</p>
         </div>
 
-        {/* Payment form — Stripe Elements will replace this section */}
+        {/* Stripe redirect section */}
         <div className="rounded-2xl p-5 mb-5"
           style={{ backgroundColor: 'rgba(255,255,255,0.94)', border: '1px solid #E8F0ED' }}>
           <p className="text-xs font-bold uppercase tracking-wide mb-4" style={{ color: '#9CA3AF' }}>
             Payment Details
           </p>
 
-          {/* ── STRIPE ELEMENTS MOUNT POINT ──────────────────────────
-              When Stripe is integrated:
-              1. Replace the mock inputs below with <CardElement />
-              2. On submit, call stripe.createPaymentMethod() then your
-                 API route /api/stripe/create-subscription
-              ──────────────────────────────────────────────────────── */}
-          <div className="rounded-xl p-4 mb-4 text-center"
-            style={{ backgroundColor: '#E8F0ED', border: '1.5px dashed #4A7C6F66' }}>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#4A7C6F' }}>🔒 Stripe Secure Payment</p>
-            <p className="text-xs" style={{ color: '#9CA3AF' }}>
-              Payment form will appear here once Stripe is connected.<br />
-              Your card details are encrypted and never stored on our servers.
+          <div className="rounded-xl p-4 mb-5 text-center"
+            style={{ backgroundColor: '#4A7C6F0D', border: '1px solid #4A7C6F33' }}>
+            <p className="text-sm font-semibold mb-1" style={{ color: '#2E5249' }}>🔒 Secured by Stripe</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#6B7280' }}>
+              You&apos;ll be taken to Stripe&apos;s secure payment page to enter your card details.
+              Your information is encrypted and never touches our servers.
             </p>
           </div>
 
-          {/* Mock card inputs — placeholder only */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#2C2C2C' }}>Card number</label>
-              <input type="text" placeholder="•••• •••• •••• ••••" disabled
-                className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-                style={{ borderColor: '#E8F0ED', backgroundColor: '#F9FAFB', color: '#9CA3AF' }} />
+          {error && (
+            <div className="rounded-lg px-3 py-2 mb-4" style={{ backgroundColor: '#FEE2E2', border: '1px solid #FECACA' }}>
+              <p className="text-xs font-medium" style={{ color: '#DC2626' }}>⚠ {error}</p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: '#2C2C2C' }}>Expiry</label>
-                <input type="text" placeholder="MM / YY" disabled
-                  className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-                  style={{ borderColor: '#E8F0ED', backgroundColor: '#F9FAFB', color: '#9CA3AF' }} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: '#2C2C2C' }}>CVC</label>
-                <input type="text" placeholder="•••" disabled
-                  className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-                  style={{ borderColor: '#E8F0ED', backgroundColor: '#F9FAFB', color: '#9CA3AF' }} />
-              </div>
-            </div>
+          )}
 
-            <div className="rounded-lg px-3 py-2" style={{ backgroundColor: '#4A7C6F12', border: '1px solid #4A7C6F33' }}>
-              <p className="text-xs" style={{ color: '#2E5249' }}>
-                🔒 Your payment is secured by Stripe. We never see or store your card number.
-              </p>
-            </div>
+          <button
+            onClick={handleStartTrial}
+            disabled={submitting}
+            className="w-full py-4 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: submitting ? '#9CA3AF' : '#4A7C6F' }}
+          >
+            {submitting ? 'Redirecting to Stripe…' : 'Start My 14-Day Free Trial →'}
+          </button>
 
-            <button type="submit" disabled={submitting}
-              className="w-full py-4 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: submitting ? '#9CA3AF' : '#4A7C6F' }}>
-              {submitting ? 'Setting up your trial…' : 'Start My 14-Day Free Trial'}
-            </button>
-          </form>
+          <p className="text-xs text-center mt-3" style={{ color: '#9CA3AF' }}>
+            No charge today · Cancel anytime before Day 15
+          </p>
         </div>
 
-        {/* Refund / terms */}
+        {/* Terms */}
         <p className="text-xs text-center mb-4" style={{ color: '#9CA3AF' }}>
           By continuing you agree to the{' '}
           <Link href="/terms" style={{ color: '#4A7C6F' }}>Terms of Service</Link>
