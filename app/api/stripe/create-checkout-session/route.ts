@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { STRIPE_PRICE_IDS } from '@/lib/founding';
 
 export async function POST(request: Request) {
@@ -17,6 +17,8 @@ export async function POST(request: Request) {
       request.headers.get('x-forwarded-proto') + '://' + request.headers.get('x-forwarded-host') ||
       'http://localhost:3000';
 
+    const stripe = getStripe(); // initialized at runtime, not build time
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
@@ -27,8 +29,6 @@ export async function POST(request: Request) {
           is_founding: 'true',
         },
       },
-      // Collect email — ties the Stripe customer to the subscriber
-      customer_email: undefined, // Stripe will collect it on the checkout page
       allow_promotion_codes: false,
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${planId}`,
       cancel_url: `${origin}/checkout?plan=${planId}`,
