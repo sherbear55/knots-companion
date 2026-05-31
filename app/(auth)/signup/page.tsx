@@ -29,28 +29,41 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
 
-    const supabase = createClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name } },
-    });
+    try {
+      const supabase = createClient();
 
-    if (signUpError) {
-      setError(signUpError.message);
+      // Wrap with a 10-second timeout so we get a real error instead of an infinite hang
+      const signUpPromise = supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name } },
+      });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out — please check your connection and try again.')), 10000)
+      );
+
+      const { data, error: signUpError } = await Promise.race([signUpPromise, timeoutPromise]);
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      // If email confirmation is still required, data.session will be null
+      if (data.user && !data.session) {
+        setNeedsConfirmation(true);
+        setLoading(false);
+        return;
+      }
+
+      // Fully signed in — move to plan selection
+      router.push('/plans');
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       setLoading(false);
-      return;
     }
-
-    // If email confirmation is required, data.session will be null
-    if (data.user && !data.session) {
-      setNeedsConfirmation(true);
-      setLoading(false);
-      return;
-    }
-
-    // Fully signed in — move to plan selection
-    router.push('/plans');
   };
 
   // Email confirmation screen
@@ -106,7 +119,6 @@ export default function SignupPage() {
           <p className="text-sm font-medium mt-1" style={{ color: '#4A7C6F' }}>Caregiver Companion</p>
         </div>
 
-        {/* Founding seats counter */}
         <div className="w-full max-w-sm rounded-xl px-4 py-3 mb-4"
           style={{ backgroundColor: 'rgba(255,255,255,0.88)', border: '1.5px solid #C49A6C66' }}>
           <div className="flex items-center justify-between mb-1.5">
@@ -130,7 +142,7 @@ export default function SignupPage() {
 
           {error && (
             <div className="rounded-lg px-3 py-2 mb-4" style={{ backgroundColor: '#FEE2E2', border: '1px solid #FECACA' }}>
-              <p className="text-xs" style={{ color: '#DC2626' }}>{error}</p>
+              <p className="text-xs font-medium" style={{ color: '#DC2626' }}>⚠ {error}</p>
             </div>
           )}
 
