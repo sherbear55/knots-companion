@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -25,10 +25,6 @@ export async function middleware(request: NextRequest) {
 
   // Refresh session — keeps auth token alive
   await supabase.auth.getUser();
-
-  // Protected app routes — redirect to login if not authenticated
-  // Full auth enforcement will be added when Stripe is live
-  // For now: let unauthenticated users through to support the free/demo tier
 
   return supabaseResponse;
 }
