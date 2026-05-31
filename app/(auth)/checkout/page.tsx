@@ -1,48 +1,78 @@
 'use client';
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   FOUNDING_PRICE_MONTHLY,
   FOUNDING_PRICE_6MONTH,
   FOUNDING_PRICE_12MONTH,
 } from '@/lib/founding';
 
-const planDetails: Record<string, { name: string; price: string; billing: string; chargeNote: string }> = {
+const planDetails: Record<string, {
+  name: string;
+  price: string;
+  billing: string;
+  chargeNote: string;
+  badge: string;
+  badgeColor: string;
+}> = {
   monthly: {
     name: 'Monthly Founding',
     price: FOUNDING_PRICE_MONTHLY,
     billing: '/month',
+    badge: 'Most Flexible',
+    badgeColor: '#4A7C6F',
     chargeNote: `Your card will not be charged until Day 15. After your 14-day trial, $${FOUNDING_PRICE_MONTHLY}/month begins automatically. Cancel anytime before Day 15 and you will not be charged.`,
   },
   '6month': {
     name: '6-Month Founding',
     price: FOUNDING_PRICE_6MONTH,
     billing: 'every 6 months',
+    badge: 'Best Value',
+    badgeColor: '#C49A6C',
     chargeNote: `Your card will not be charged until Day 15. After your 14-day trial, $${FOUNDING_PRICE_6MONTH} is charged on Day 15. This plan is all-sales-final after Day 15.`,
   },
   '12month': {
     name: '12-Month Founding',
     price: FOUNDING_PRICE_12MONTH,
     billing: 'per year',
-    chargeNote: `Your card will not be charged until Day 15. After your 14-day trial, $${FOUNDING_PRICE_12MONTH} is charged on Day 15. This plan is all-sales-final after Day 15. Your print book and eBook will ship within 30 days of your charge date.`,
+    badge: 'Full Experience',
+    badgeColor: '#B8847A',
+    chargeNote: `Your card will not be charged until Day 15. After your 14-day trial, $${FOUNDING_PRICE_12MONTH} is charged on Day 15. This plan is all-sales-final after Day 15. Your print book and eBook ship within 30 days of your charge date.`,
   },
 };
 
 function CheckoutForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const planId = searchParams.get('plan') ?? 'monthly';
   const plan = planDetails[planId] ?? planDetails.monthly;
 
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    // TODO: Replace with Stripe payment intent / subscription creation
-    await new Promise((r) => setTimeout(r, 1200));
-    router.push('/dashboard');
+  const handleCheckout = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? 'Could not start checkout. Please try again.');
+      }
+
+      // Redirect to Stripe hosted checkout
+      window.location.href = data.url;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,9 +104,18 @@ function CheckoutForm() {
         <div className="rounded-2xl p-5 mb-5"
           style={{ backgroundColor: 'rgba(255,255,255,0.94)', border: '1px solid #E8F0ED' }}>
           <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: '#9CA3AF' }}>Order Summary</p>
+
+          {/* Plan badge */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: plan.badgeColor + '22', color: plan.badgeColor }}>
+              {plan.badge}
+            </span>
+          </div>
+
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold" style={{ color: '#2C2C2C' }}>{plan.name}</span>
-            <span className="text-sm font-bold" style={{ color: '#4A7C6F' }}>${plan.price}{plan.billing}</span>
+            <span className="text-sm font-bold" style={{ color: plan.badgeColor }}>${plan.price}{plan.billing}</span>
           </div>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm" style={{ color: '#6B7280' }}>Due today</span>
@@ -86,67 +125,65 @@ function CheckoutForm() {
           <p className="text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>{plan.chargeNote}</p>
         </div>
 
-        {/* Payment form — Stripe Elements will replace this section */}
+        {/* What happens next */}
         <div className="rounded-2xl p-5 mb-5"
           style={{ backgroundColor: 'rgba(255,255,255,0.94)', border: '1px solid #E8F0ED' }}>
-          <p className="text-xs font-bold uppercase tracking-wide mb-4" style={{ color: '#9CA3AF' }}>
-            Payment Details
-          </p>
-
-          {/* ── STRIPE ELEMENTS MOUNT POINT ──────────────────────────
-              When Stripe is integrated:
-              1. Replace the mock inputs below with <CardElement />
-              2. On submit, call stripe.createPaymentMethod() then your
-                 API route /api/stripe/create-subscription
-              ──────────────────────────────────────────────────────── */}
-          <div className="rounded-xl p-4 mb-4 text-center"
-            style={{ backgroundColor: '#E8F0ED', border: '1.5px dashed #4A7C6F66' }}>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#4A7C6F' }}>🔒 Stripe Secure Payment</p>
-            <p className="text-xs" style={{ color: '#9CA3AF' }}>
-              Payment form will appear here once Stripe is connected.<br />
-              Your card details are encrypted and never stored on our servers.
-            </p>
+          <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: '#9CA3AF' }}>What happens next</p>
+          <div className="space-y-3">
+            {[
+              { step: '1', text: 'Enter your card on Stripe\'s secure page — we never see your card number' },
+              { step: '2', text: '14-day free trial begins immediately — explore everything, no charge' },
+              { step: '3', text: 'Day 15: your founding rate locks in and billing begins' },
+              { step: '4', text: 'Cancel anytime from your account — no hoops, no guilt' },
+            ].map(({ step, text }) => (
+              <div key={step} className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ backgroundColor: '#4A7C6F22' }}>
+                  <span className="text-xs font-bold" style={{ color: '#4A7C6F' }}>{step}</span>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: '#3D3D3D' }}>{text}</p>
+              </div>
+            ))}
           </div>
-
-          {/* Mock card inputs — placeholder only */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#2C2C2C' }}>Card number</label>
-              <input type="text" placeholder="•••• •••• •••• ••••" disabled
-                className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-                style={{ borderColor: '#E8F0ED', backgroundColor: '#F9FAFB', color: '#9CA3AF' }} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: '#2C2C2C' }}>Expiry</label>
-                <input type="text" placeholder="MM / YY" disabled
-                  className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-                  style={{ borderColor: '#E8F0ED', backgroundColor: '#F9FAFB', color: '#9CA3AF' }} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: '#2C2C2C' }}>CVC</label>
-                <input type="text" placeholder="•••" disabled
-                  className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-                  style={{ borderColor: '#E8F0ED', backgroundColor: '#F9FAFB', color: '#9CA3AF' }} />
-              </div>
-            </div>
-
-            <div className="rounded-lg px-3 py-2" style={{ backgroundColor: '#4A7C6F12', border: '1px solid #4A7C6F33' }}>
-              <p className="text-xs" style={{ color: '#2E5249' }}>
-                🔒 Your payment is secured by Stripe. We never see or store your card number.
-              </p>
-            </div>
-
-            <button type="submit" disabled={submitting}
-              className="w-full py-4 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: submitting ? '#9CA3AF' : '#4A7C6F' }}>
-              {submitting ? 'Setting up your trial…' : 'Start My 14-Day Free Trial'}
-            </button>
-          </form>
         </div>
 
-        {/* Refund / terms */}
-        <p className="text-xs text-center mb-4" style={{ color: '#9CA3AF' }}>
+        {/* Security badge */}
+        <div className="rounded-xl px-4 py-3 mb-5 flex items-center gap-3"
+          style={{ backgroundColor: '#4A7C6F0D', border: '1px solid #4A7C6F33' }}>
+          <span className="text-lg flex-shrink-0">🔒</span>
+          <p className="text-xs" style={{ color: '#2E5249' }}>
+            Payments are processed securely by <strong>Stripe</strong> — the same technology used by Amazon, Google, and millions of businesses worldwide. We never store your card details.
+          </p>
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="rounded-xl px-4 py-3 mb-4"
+            style={{ backgroundColor: '#FEE2E2', border: '1px solid #FCA5A5' }}>
+            <p className="text-xs font-medium" style={{ color: '#DC2626' }}>⚠ {error}</p>
+          </div>
+        )}
+
+        {/* CTA — redirects to Stripe */}
+        <button
+          onClick={handleCheckout}
+          disabled={loading}
+          className="w-full py-4 rounded-xl text-sm font-semibold text-white mb-3 hover:opacity-90 transition-opacity disabled:opacity-60"
+          style={{ backgroundColor: '#4A7C6F' }}>
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              Redirecting to secure checkout…
+            </span>
+          ) : (
+            'Start My 14-Day Free Trial →'
+          )}
+        </button>
+
+        <p className="text-xs text-center mb-6" style={{ color: '#9CA3AF' }}>
           By continuing you agree to the{' '}
           <Link href="/terms" style={{ color: '#4A7C6F' }}>Terms of Service</Link>
           {' '}and{' '}
