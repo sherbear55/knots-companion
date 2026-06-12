@@ -71,7 +71,7 @@ export async function POST(request: Request) {
           const email = session.customer_details?.email ?? session.customer_email;
           if (email) {
             const { data } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-            const match = data?.users?.find(u => u.email === email);
+            const match = data?.users?.find((u: { email?: string }) => u.email === email);
             if (match) {
               const { error } = await supabase
                 .from('profiles')
