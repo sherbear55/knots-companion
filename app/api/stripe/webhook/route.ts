@@ -51,12 +51,27 @@ export async function POST(request: Request) {
           ? new Date(subscription.trial_end * 1000).toISOString()
           : null;
 
+        // Extract shipping address if present (12-month plan — signed hardcopy delivery)
+        const shippingDetails = session.shipping_details;
+        const shippingAddress = shippingDetails?.address
+          ? {
+              name:        shippingDetails.name ?? null,
+              line1:       shippingDetails.address.line1 ?? null,
+              line2:       shippingDetails.address.line2 ?? null,
+              city:        shippingDetails.address.city ?? null,
+              state:       shippingDetails.address.state ?? null,
+              postal_code: shippingDetails.address.postal_code ?? null,
+              country:     shippingDetails.address.country ?? null,
+            }
+          : null;
+
         const updatePayload = {
           tier:               'founding',
           is_founding:        true,
           founding_plan:      planId ?? null,
           stripe_customer_id: customerId,
           trial_ends_at:      trialEndsAt,
+          ...(shippingAddress ? { shipping_address: shippingAddress } : {}),
         };
 
         if (supabaseUserId) {
