@@ -29,6 +29,12 @@ export async function POST(request: Request) {
       line_items: [{ price: priceId, quantity: 1 }],
       // Pass user identity so the webhook can update the right profile
       ...(user?.email ? { customer_email: user.email } : {}),
+      // Collect shipping address for 12-month plan (signed hardcopy delivery)
+      ...(planId === '12month' ? {
+        shipping_address_collection: {
+          allowed_countries: ['US', 'CA', 'GB', 'AU'],
+        },
+      } : {}),
       metadata: {
         supabase_user_id: user?.id ?? '',
         plan_id: planId,
