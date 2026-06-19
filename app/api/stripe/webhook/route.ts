@@ -3,8 +3,14 @@ import Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/supabase/server';
 
-// Must be force-dynamic — reads raw request body
 export const dynamic = 'force-dynamic';
+
+// Locked rates by plan for founding members
+const FOUNDING_LOCKED_RATES: Record<string, number> = {
+  monthly:   6.99,
+  '6month':  35.99,
+  '12month': 64.99,
+};
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -20,7 +26,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
   }
 
-  // Verify the event came from Stripe (not a spoofed request)
   let event: Stripe.Event;
   try {
     event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
@@ -35,54 +40,41 @@ export async function POST(request: Request) {
   try {
     switch (event.type) {
 
-      // ── Checkout completed → user finished Stripe payment/trial setup ──────
+      // ── Checkout completed → user finished Stripe payment/trial setup ─────────
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        // Get subscription to read trial end date
         const subscription = await getStripe().subscriptions.retrieve(
           session.subscription as string
         );
 
-        const supabaseUserId = session.metadata?.supabase_user_id;
-        const planId         = session.metadata?.plan_id ?? subscription.metadata?.plan_id;
-        const customerId     = session.customer as string;
-        const trialEndsAt    = subscription.trial_end
+        const supabaseUserId  = session.metadata?.supabase_user_id;
+        const planId          = session.metadata?.plan_id ?? subscription.metadata?.plan_id;
+        const customerId      = session.customer as string;
+        const trialEndsAt     = subscription.trial_end
           ? new Date(subscription.trial_end * 1000).toISOString()
           : null;
 
-        // Extract shipping address if present (12-month plan — signed hardcopy delivery)
-        const shippingDetails = session.shipping_details;
-        const shippingAddress = shippingDetails?.address
-          ? {
-              name:        shippingDetails.name ?? null,
-              line1:       shippingDetails.address.line1 ?? null,
-              line2:       shippingDetails.address.line2 ?? null,
-              city:        shippingDetails.address.city ?? null,
-              state:       shippingDetails.address.state ?? null,
-              postal_code: shippingDetails.address.postal_code ?? null,
-              country:     shippingDetails.address.country ?? null,
-            }
-          : null;
+        // Determine member tier from the founding flag set at checkout
+        const isFoundingMember = subscription.metadata?.is_founding === 'true';
 
         const updatePayload = {
-          tier:               'founding',
-          is_founding:        true,
-          founding_plan:      planId ?? null,
+          tier:               isFoundingMember ? 'founder' : 'paid',
+          is_founding:        isFoundingMember,
+          plan:               planId ?? null,
+          cohort:             isFoundingMember ? 'founding' : null,
+          locked_rate:        isFoundingMember && planId ? (FOUNDING_LOCKED_RATES[planId] ?? null) : null,
           stripe_customer_id: customerId,
           trial_ends_at:      trialEndsAt,
-          ...(shippingAddress ? { shipping_address: shippingAddress } : {}),
         };
 
         if (supabaseUserId) {
-          // Best path — user ID is embedded in session metadata
           const { error } = await supabase
             .from('profiles')
             .update(updatePayload)
             .eq('id', supabaseUserId);
           if (error) console.error('Profile update error (by id):', error);
         } else {
-          // Fallback — look up by email via auth admin API
           const email = session.customer_details?.email ?? session.customer_email;
           if (email) {
             const { data } = await supabase.auth.admin.listUsers({ perPage: 1000 });
@@ -101,43 +93,54 @@ export async function POST(request: Request) {
         break;
       }
 
-      // ── Subscription updated (trial → active, plan change, etc.) ─────────
+      // ── Subscription updated (trial → active, plan change, etc.) ─────────────
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
-        // If trial ended and subscription is now active, just update trial_ends_at
         if (subscription.status === 'active') {
+          // Trial ended, subscription is now fully active — clear trial window
           await supabase
             .from('profiles')
             .update({ trial_ends_at: null })
             .eq('stripe_customer_id', customerId);
         }
 
-        // If subscription was cancelled but hasn't ended yet, note it
         if (subscription.status === 'canceled') {
+          // Cancellation — founding status is permanently lost per membership rules
           await supabase
             .from('profiles')
-            .update({ tier: 'free', is_founding: false, trial_ends_at: null })
+            .update({
+              tier: 'member',
+              is_founding: false,
+              trial_ends_at: null,
+              cohort: null,
+              locked_rate: null,
+            })
             .eq('stripe_customer_id', customerId);
         }
         break;
       }
 
-      // ── Subscription deleted (expired, payment failed, cancelled) ─────────
+      // ── Subscription deleted (expired, payment failed, cancelled) ───────────
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
         await supabase
           .from('profiles')
-          .update({ tier: 'free', is_founding: false, trial_ends_at: null })
+          .update({
+            tier: 'member',
+            is_founding: false,
+            trial_ends_at: null,
+            cohort: null,
+            locked_rate: null,
+          })
           .eq('stripe_customer_id', customerId);
         break;
       }
 
       default:
-        // Unhandled event type — safe to ignore
         break;
     }
 
@@ -146,7 +149,6 @@ export async function POST(request: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Webhook processing failed';
     console.error('Webhook handler error:', message);
-    // Return 200 so Stripe doesn't keep retrying a permanent error
     return NextResponse.json({ error: message }, { status: 200 });
   }
 }
