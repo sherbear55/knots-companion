@@ -1,6 +1,8 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 const navItems = [
   { href: '/dashboard', label: 'Home', icon: (active: boolean) => (
@@ -22,6 +24,64 @@ const navItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      const supabase = createClient();
+
+      // 1. Must be logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace('/login');
+        return;
+      }
+
+      // 2. Must have a profile with an active paid tier or valid trial
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tier, trial_ends_at')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile) {
+        router.replace('/plans');
+        return;
+      }
+
+      // Paid tier — always allow
+      if (profile.tier !== 'free') {
+        setChecking(false);
+        return;
+      }
+
+      // Free tier with an active trial — allow
+      if (profile.trial_ends_at && new Date(profile.trial_ends_at) > new Date()) {
+        setChecking(false);
+        return;
+      }
+
+      // Free tier, no trial (or expired) — send to plans
+      router.replace('/plans');
+    };
+
+    checkAccess();
+  }, [router]);
+
+  // Show a neutral loading screen while the access check runs
+  if (checking) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: '#FAF7F2' }}
+      >
+        <div style={{ color: '#4A7C6F', fontSize: '1rem', fontWeight: 500 }}>
+          Loading…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FAF7F2' }}>
