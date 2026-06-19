@@ -38,7 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // 2. Must have a profile with an active paid tier or valid trial
+      // 2. Must have an active paid tier (paid / knot_holder / founder) or valid trial
       const { data: profile } = await supabase
         .from('profiles')
         .select('tier, trial_ends_at')
@@ -50,26 +50,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Paid tier — always allow
-      if (profile.tier !== 'free') {
+      // Any active paid tier — allow
+      if (profile.tier !== 'member') {
         setChecking(false);
         return;
       }
 
-      // Free tier with an active trial — allow
+      // Member tier with an active trial — allow
       if (profile.trial_ends_at && new Date(profile.trial_ends_at) > new Date()) {
         setChecking(false);
         return;
       }
 
-      // Free tier, no trial (or expired) — send to plans
+      // Member tier, no trial (or expired) — send to plans
       router.replace('/plans');
     };
 
     checkAccess();
   }, [router]);
 
-  // Show a neutral loading screen while the access check runs
   if (checking) {
     return (
       <div
@@ -85,44 +84,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FAF7F2' }}>
-
-      {/* Book cover background — increased opacity for more presence */}
       <div
         aria-hidden="true"
         style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: 'none',
-          backgroundImage: "url('/cover-bg.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 42%',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.32,
+          position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+          backgroundImage: "url('/cover-bg.jpg')", backgroundSize: 'cover',
+          backgroundPosition: 'center 42%', backgroundRepeat: 'no-repeat', opacity: 0.32,
         }}
       />
-
-      {/* Soft warm overlay — lightened so the image shows through more */}
       <div
         aria-hidden="true"
         style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: 'none',
+          position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
           background: 'linear-gradient(to bottom, rgba(250,247,242,0.38) 0%, rgba(250,247,242,0.22) 50%, rgba(250,247,242,0.38) 100%)',
         }}
       />
-
-      {/* Top branding bar */}
       <header
         className="sticky top-0 z-40 border-b"
-        style={{
-          backgroundColor: 'rgba(250,247,242,0.88)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderColor: '#E8F0ED',
-        }}
+        style={{ backgroundColor: 'rgba(250,247,242,0.88)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderColor: '#E8F0ED' }}
       >
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3" style={{ position: 'relative', zIndex: 1 }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4A7C6F' }}>
@@ -134,31 +113,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-
-      {/* Page content */}
       <main className="flex-1 pb-20 max-w-lg mx-auto w-full" style={{ position: 'relative', zIndex: 1 }}>
         {children}
       </main>
-
-      {/* Bottom nav — frosted glass */}
       <nav
         className="fixed bottom-0 left-0 right-0 border-t z-50"
-        style={{
-          backgroundColor: 'rgba(250,247,242,0.88)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderColor: '#E8F0ED',
-        }}
+        style={{ backgroundColor: 'rgba(250,247,242,0.88)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderColor: '#E8F0ED' }}
       >
         <div className="max-w-lg mx-auto flex">
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex-1 flex flex-col items-center justify-center py-3 gap-0.5"
-              >
+              <Link key={item.href} href={item.href} className="flex-1 flex flex-col items-center justify-center py-3 gap-0.5">
                 {item.icon(isActive)}
                 <span className="text-xs font-medium" style={{ color: isActive ? '#4A7C6F' : '#9CA3AF' }}>
                   {item.label}
