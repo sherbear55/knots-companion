@@ -1,10 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   FOUNDING_SEAT_CAP,
-  FOUNDING_SEATS_LEFT,
   FOUNDING_PRICE_MONTHLY,
   FOUNDING_PRICE_6MONTH,
   FOUNDING_PRICE_12MONTH,
@@ -80,6 +79,17 @@ const plans = [
 export default function PlansPage() {
   const router = useRouter();
   const [selected, setSelected] = useState<PlanId>('monthly');
+  const [seatsLeft, setSeatsLeft] = useState<number>(FOUNDING_SEAT_CAP);
+
+  useEffect(() => {
+    fetch('/api/founding-seats')
+      .then(r => r.json())
+      .then(data => {
+        const left = Math.max(0, FOUNDING_SEAT_CAP - (data.taken ?? 0));
+        setSeatsLeft(left);
+      })
+      .catch(() => {}); // silent fail — static fallback stays
+  }, []);
 
   const selectedPlan = plans.find(p => p.id === selected)!;
 
@@ -89,7 +99,7 @@ export default function PlansPage() {
     router.push(`/checkout?plan=${selected}`);
   };
 
-  const pct = Math.round(((FOUNDING_SEAT_CAP - FOUNDING_SEATS_LEFT) / FOUNDING_SEAT_CAP) * 100);
+  const pct = Math.round(((FOUNDING_SEAT_CAP - seatsLeft) / FOUNDING_SEAT_CAP) * 100);
 
   return (
     <div className="min-h-screen px-4 py-8" style={{ backgroundColor: '#FAF7F2', position: 'relative' }}>
@@ -123,7 +133,7 @@ export default function PlansPage() {
           style={{ backgroundColor: 'rgba(255,255,255,0.88)', border: '1.5px solid #C49A6C66' }}>
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-bold" style={{ color: '#7D5C2E' }}>Founding Member Seats</span>
-            <span className="text-xs font-bold" style={{ color: '#C49A6C' }}>{FOUNDING_SEATS_LEFT} of {FOUNDING_SEAT_CAP} remaining</span>
+            <span className="text-xs font-bold" style={{ color: '#C49A6C' }}>{seatsLeft} of {FOUNDING_SEAT_CAP} remaining</span>
           </div>
           <div className="h-1.5 rounded-full" style={{ backgroundColor: '#E8F0ED' }}>
             <div className="h-1.5 rounded-full"
