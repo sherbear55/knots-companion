@@ -12,6 +12,57 @@ const FOUNDING_LOCKED_RATES: Record<string, number> = {
   '12month': 64.99,
 };
 
+// Flodesk segment IDs by plan
+const FLODESK_SEGMENT_IDS: Record<string, string> = {
+  monthly:  '6a3937dd2af0bfd78767949e',
+  '6month': '6a3937ecf5968997758b3fa3',
+  '12month':'6a3937faad2808ebee2eea2d',
+};
+
+async function addSubscriberToFlodesk(
+  email: string,
+  firstName: string,
+  planId: string
+): Promise<void> {
+  const apiKey = process.env.FLODESK_API_KEY;
+  if (!apiKey) {
+    console.error('Missing FLODESK_API_KEY environment variable');
+    return;
+  }
+
+  const segmentId = FLODESK_SEGMENT_IDS[planId];
+  if (!segmentId) {
+    console.error(`No Flodesk segment found for plan: ${planId}`);
+    return;
+  }
+
+  const credentials = Buffer.from(`${apiKey}:`).toString('base64');
+
+  try {
+    const response = await fetch('https://api.flodesk.com/v1/subscribers', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        first_name: firstName || '',
+        segment_ids: [segmentId],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Flodesk API error ${response.status}: ${errorText}`);
+    } else {
+      console.log(`Flodesk: subscriber ${email} added to segment ${planId} (${segmentId})`);
+    }
+  } catch (err) {
+    console.error('Flodesk fetch error:', err instanceof Error ? err.message : err);
+  }
+}
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
@@ -40,7 +91,7 @@ export async function POST(request: Request) {
   try {
     switch (event.type) {
 
-      // ── Checkout completed → user finished Stripe payment/trial setup ─────────
+      // ── Checkout completed → user finished Stripe payment/trial setup ──────────
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
 
@@ -90,6 +141,15 @@ export async function POST(request: Request) {
             }
           }
         }
+
+        // ── Add subscriber to Flodesk segment based on plan ──────────────────────
+        if (planId) {
+          const customerEmail = session.customer_details?.email ?? session.customer_email ?? '';
+          const customerName  = session.customer_details?.name ?? '';
+          const firstName     = customerName.split(' ')[0] ?? '';
+          await addSubscriberToFlodesk(customerEmail, firstName, planId);
+        }
+
         break;
       }
 
@@ -122,7 +182,7 @@ export async function POST(request: Request) {
         break;
       }
 
-      // ── Subscription deleted (expired, payment failed, cancelled) ───────────
+      // ── Subscription deleted (expired, payment failed, cancelled) ─────────────
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
